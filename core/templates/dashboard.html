@@ -122,7 +122,7 @@
             </select>
         </form>
 
-        <button class="text-sm font-medium text-blue-600 hover:text-blue-700">Chi tiết</button>
+        <button onclick="document.getElementById('detailsModal').classList.remove('hidden')" type="button" class="text-sm font-medium text-blue-600 hover:text-blue-700">Chi tiết</button>
     </div>
 </div>
                     
@@ -274,7 +274,84 @@
 
                 </div>
             </div>
+<div id="detailsModal" class="{% if show_modal == 'false' %}hidden{% endif %} fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm transition-all">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col overflow-hidden m-4 border border-gray-100">
+        
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <h3 class="text-lg font-bold text-gray-900">Chi tiết ổ đĩa {{ selected_drive }}</h3>
+            <div class="flex items-center gap-2 mt-1">
+    {% if not is_root %}
+    <a href="?drive={{ selected_drive }}&path={{ parent_path }}&show_modal=true&sort={{ sort_by }}" 
+       class="flex items-center gap-1 text-xs text-blue-600 hover:underline">
+        <i data-lucide="arrow-left" class="h-3 w-3"></i> Quay lại
+    </a>
+    {% endif %}
+    <span class="text-xs text-gray-400 truncate max-w-md">{{ current_path }}</span>
+</div>
+            
+            <div class="flex items-center gap-4">
+                <form method="GET" action="" class="m-0 flex items-center gap-2">
+                    <input type="hidden" name="drive" value="{{ selected_drive }}">
+                    <input type="hidden" name="show_modal" value="true">
+                    
+                    <span class="text-sm text-gray-500">Sắp xếp:</span>
+                    <select name="sort" onchange="this.form.submit()" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer">
+                        <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Tên (A-Z)</option>
+                        <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Tên (Z-A)</option>
+                        <option value="size_desc" {% if sort_by == 'size_desc' %}selected{% endif %}>Dung lượng (Giảm dần)</option>
+                        <option value="size_asc" {% if sort_by == 'size_asc' %}selected{% endif %}>Dung lượng (Tăng dần)</option>
+                        <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Ngày tải (Mới nhất)</option>
+                        <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Ngày tải (Cũ nhất)</option>
+                    </select>
+                </form>
 
+                <button onclick="document.getElementById('detailsModal').classList.add('hidden')" class="text-gray-400 hover:text-red-500 transition-colors p-1">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="overflow-y-auto flex-1 p-6 bg-white">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
+                        <th class="pb-3 pl-2">Tên Tệp / Thư mục</th>
+                        <th class="pb-3 text-right pr-4">Kích thước</th>
+                        <th class="pb-3 text-right">Ngày cập nhật</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm divide-y divide-gray-50">
+                    {% for file in file_list %}
+                    <tr class="hover:bg-blue-50/50 transition-colors group">
+                        <td class="py-3 pl-2">
+    {% if file.is_dir %}
+    <a href="?drive={{ selected_drive }}&path={{ file.full_path }}&show_modal=true&sort={{ sort_by }}" 
+       class="flex items-center gap-3 group">
+        <i data-lucide="folder" class="h-5 w-5 text-blue-400 fill-blue-50"></i>
+        <span class="font-medium text-gray-700 group-hover:text-blue-700">{{ file.name }}</span>
+    </a>
+    {% else %}
+    <div class="flex items-center gap-3">
+        <i data-lucide="file" class="h-5 w-5 text-gray-400"></i>
+        <span class="text-gray-700">{{ file.name }}</span>
+    </div>
+    {% endif %}
+</td>
+                        <td class="py-3 text-right pr-4 text-gray-500">
+    {{ file.size }} MB
+</td>
+                        <td class="py-3 text-right text-gray-500">{{ file.date }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="py-8 text-center text-gray-500">Thư mục trống hoặc không có quyền truy cập.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
         </main>
     </div>
 

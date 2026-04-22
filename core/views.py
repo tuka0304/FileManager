@@ -90,3 +90,18 @@ def dashboard_view(request):
         'calc_size': calc_size, # Gửi trạng thái về lại HTML
     }
     return render(request, 'dashboard.html', context)
+from django.shortcuts import render
+from .utils import get_file_properties # Import hàm từ file utils vừa tạo
+
+def dashboard_view(request):
+    # Đường dẫn thư mục bạn muốn test (nhớ đổi thành đường dẫn thật trên máy bạn)
+    test_file_path = r"C:\ThuMucCuaBan\file_test.txt" 
+    
+    # Gọi hàm để lấy thông tin
+    file_info = get_file_properties(test_file_path)
+    
+    # Truyền dữ liệu này ra giao diện (template)
+    context = {
+        'file_info': file_info
+    }
+    return render(request, 'dashboard.html', context)

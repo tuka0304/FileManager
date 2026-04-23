@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from pathlib import Path
+from dotenv import load_dotenv # Thêm dòng này
+
+# Yêu cầu Django tải các biến từ file .env lên
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -76,11 +82,11 @@ WSGI_APPLICATION = 'FileManager.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'file_manager',
-        'USER': 'postgres',
-        'PASSWORD': '123',
-        'HOST': 'localhost', # Hoặc IP server nếu dùng cloud DB
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME', 'file_manager'),
+        'USER': os.getenv('DB_USER', 'postgres'),
+        'PASSWORD': os.getenv('DB_PASSWORD', '123'), # Lấy mật khẩu từ file .env
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 

@@ -1,7 +1,12 @@
-import shutil
 import os
+import shutil
 import datetime
-from django.shortcuts import render
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.forms import UserCreationForm
+
+from .utils import get_file_properties
+
 
 def get_folder_size(folder_path):
     total_size = 0
@@ -15,28 +20,38 @@ def get_folder_size(folder_path):
         pass
     return total_size
 
+
+def register_view(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = UserCreationForm()
+
+    return render(request, 'registration/register.html', {'form': form})
+
+
 def dashboard_view(request):
     selected_drive = request.GET.get('drive', 'C:')
     sort_by = request.GET.get('sort', 'name_asc')
     show_modal = request.GET.get('show_modal', 'false')
-    
-    # 1. Thêm tham số xác nhận việc quét dung lượng (mặc định là false)
     calc_size = request.GET.get('calc_size', 'false')
-    
+
     root_path = f"{selected_drive}\\"
     current_path = request.GET.get('path', root_path)
 
     if not current_path.startswith(selected_drive):
         current_path = root_path
 
-    # Quét dung lượng tổng ổ đĩa (luôn hiển thị vì nó nhanh)
     try:
         usage = shutil.disk_usage(root_path)
         he_so = 1024 ** 3
         tong_dung_luong = round(usage.total / he_so, 1)
         da_su_dung = round(usage.used / he_so, 1)
         phan_tram = round((usage.used / usage.total) * 100)
-    except:
+    except Exception:
         tong_dung_luong, da_su_dung, phan_tram = 0, 0, 0
 
     file_list = []
@@ -48,9 +63,8 @@ def dashboard_view(request):
                         stat = entry.stat()
                         size_mb = 0
                         is_scanned = False
-                        
+
                         if entry.is_dir():
-                            # 2. Chỉ quét nếu người dùng đã nhấn nút "Load" (calc_size == 'true')
                             if calc_size == 'true':
                                 size_bytes = get_folder_size(entry.path)
                                 size_mb = round(size_bytes / (1024 * 1024), 2)
@@ -59,24 +73,43 @@ def dashboard_view(request):
                                 size_mb = 0
                                 is_scanned = False
                         else:
-                            # File lẻ thì lấy dung lượng luôn vì nó rất nhanh
                             size_mb = round(stat.st_size / (1024 * 1024), 2)
                             is_scanned = True
-                            
+
+                        file_info = get_file_properties(entry.path)
+
                         file_list.append({
                             'name': entry.name,
                             'full_path': entry.path,
                             'is_dir': entry.is_dir(),
                             'size': size_mb,
-                            'is_scanned': is_scanned, # Biến này để hiển thị trên HTML
+                            'is_scanned': is_scanned,
                             'date': datetime.datetime.fromtimestamp(stat.st_mtime).strftime('%d/%m/%Y %H:%M'),
-                            'timestamp': stat.st_mtime
+                            'timestamp': stat.st_mtime,
+                            'properties': file_info,
                         })
-                    except: pass
-        except: pass
+                    except Exception:
+                        pass
+        except Exception:
+            pass
 
-    # Logic sắp xếp giữ nguyên...
-    # ...
+    if sort_by == 'name_asc':
+        file_list.sort(key=lambda x: x['name'].lower())
+    elif sort_by == 'name_desc':
+        file_list.sort(key=lambda x: x['name'].lower(), reverse=True)
+    elif sort_by == 'size_asc':
+        file_list.sort(key=lambda x: x['size'])
+    elif sort_by == 'size_desc':
+        file_list.sort(key=lambda x: x['size'], reverse=True)
+    elif sort_by == 'date_asc':
+        file_list.sort(key=lambda x: x['timestamp'])
+    elif sort_by == 'date_desc':
+        file_list.sort(key=lambda x: x['timestamp'], reverse=True)
+
+    parent_path = root_path
+    is_root = current_path.rstrip("\\") == root_path.rstrip("\\")
+    if not is_root:
+        parent_path = os.path.dirname(current_path.rstrip("\\")) + "\\"
 
     context = {
         'tong_dung_luong': tong_dung_luong,
@@ -87,21 +120,8 @@ def dashboard_view(request):
         'file_list': file_list,
         'sort_by': sort_by,
         'show_modal': show_modal,
-        'calc_size': calc_size, # Gửi trạng thái về lại HTML
-    }
-    return render(request, 'dashboard.html', context)
-from django.shortcuts import render
-from .utils import get_file_properties # Import hàm từ file utils vừa tạo
-
-def dashboard_view(request):
-    # Đường dẫn thư mục bạn muốn test (nhớ đổi thành đường dẫn thật trên máy bạn)
-    test_file_path = r"C:\ThuMucCuaBan\file_test.txt" 
-    
-    # Gọi hàm để lấy thông tin
-    file_info = get_file_properties(test_file_path)
-    
-    # Truyền dữ liệu này ra giao diện (template)
-    context = {
-        'file_info': file_info
+        'calc_size': calc_size,
+        'parent_path': parent_path,
+        'is_root': is_root,
     }
     return render(request, 'dashboard.html', context)

@@ -1,0 +1,9 @@
+<h2>Đăng ký</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Đăng ký</button>
+</form>
+
+<a href="{% url 'login' %}">Quay lại đăng nhập</a>

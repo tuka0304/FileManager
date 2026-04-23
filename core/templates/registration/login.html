@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập - FileBox</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"] {
+            width: 100%;
+            border-radius: 0.875rem;
+            border: 1px solid rgb(226 232 240);
+            background: rgb(248 250 252);
+            padding: 0.875rem 1rem;
+            font-size: 0.95rem;
+            color: rgb(15 23 42);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="email"]:focus {
+            border-color: rgb(37 99 235);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.45rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: rgb(51 65 85);
+        }
+
+        .helptext {
+            display: none;
+        }
+
+        .errorlist {
+            margin: 0 0 1rem 0;
+            padding: 0;
+            list-style: none;
+            border-radius: 0.875rem;
+            border: 1px solid rgb(254 202 202);
+            background: rgb(254 242 242);
+            color: rgb(185 28 28);
+            overflow: hidden;
+        }
+
+        .errorlist li {
+            padding: 0.875rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        form p {
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-gray-900 antialiased">
+    <div class="min-h-screen grid lg:grid-cols-2">
+        <!-- Left branding panel -->
+        <div class="hidden lg:flex relative overflow-hidden border-r border-gray-100 bg-white">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-slate-100"></div>
+
+            <div class="relative z-10 flex w-full flex-col justify-between p-10 xl:p-14">
+                <div>
+                    <a href="/" class="inline-flex items-center gap-3">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm shadow-blue-600/20">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-6 w-6">
+                                <path d="M4 7V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M4 17v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3M2 12h20" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xl font-bold tracking-tight text-gray-900">FileBox</p>
+                            <p class="text-sm text-gray-500">Quản lý tệp thông minh</p>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="max-w-xl">
+                    <div class="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700">
+                        <i data-lucide="shield-check" class="h-4 w-4"></i>
+                        Không gian đăng nhập an toàn
+                    </div>
+
+                    <h1 class="text-4xl font-bold tracking-tight text-gray-900 xl:text-5xl">
+                        Chào mừng bạn quay lại với FileBox
+                    </h1>
+                    <p class="mt-4 max-w-lg text-base leading-7 text-gray-600">
+                        Đăng nhập để tiếp tục quản lý tệp, theo dõi dung lượng, dọn dẹp hệ thống
+                        và truy cập toàn bộ không gian làm việc của bạn.
+                    </p>
+
+                    <div class="mt-10 grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+                            <div class="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                <i data-lucide="hard-drive" class="h-5 w-5"></i>
+                            </div>
+                            <h3 class="font-semibold text-gray-900">Quản lý dung lượng</h3>
+                            <p class="mt-1 text-sm leading-6 text-gray-500">
+                                Theo dõi ổ đĩa và tối ưu không gian lưu trữ nhanh hơn.
+                            </p>
+                        </div>
+
+                        <div class="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
+                            <div class="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
+                                <i data-lucide="shield-alert" class="h-5 w-5"></i>
+                            </div>
+                            <h3 class="font-semibold text-gray-900">Bảo mật tệp</h3>
+                            <p class="mt-1 text-sm leading-6 text-gray-500">
+                                Kiểm tra rủi ro và bảo vệ dữ liệu quan trọng của bạn.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 rounded-2xl bg-gray-50 p-4 ring-1 ring-gray-100 max-w-sm">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-tr from-blue-500 to-blue-600 text-sm font-bold text-white">
+                        F
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">FileBox Workspace</p>
+                        <p class="text-xs text-gray-500">Truy cập nhanh, giao diện trực quan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right login panel -->
+        <div class="flex items-center justify-center p-6 sm:p-8 lg:p-12">
+            <div class="w-full max-w-md">
+                <div class="mb-8 lg:hidden">
+                    <a href="/" class="inline-flex items-center gap-3">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm shadow-blue-600/20">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-6 w-6">
+                                <path d="M4 7V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M4 17v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3M2 12h20" />
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold text-gray-900">FileBox</span>
+                    </a>
+                </div>
+
+                <div class="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-gray-100 sm:p-8">
+                    <div class="mb-8">
+                        <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm shadow-blue-600/20">
+                            <i data-lucide="lock-keyhole" class="h-7 w-7"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold tracking-tight text-gray-900">Đăng nhập</h2>
+                        <p class="mt-2 text-sm leading-6 text-gray-500">
+                            Nhập thông tin tài khoản để truy cập hệ thống FileBox.
+                        </p>
+                    </div>
+
+                    {% if form.errors %}
+                    <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        Tên đăng nhập hoặc mật khẩu chưa đúng. Vui lòng thử lại.
+                    </div>
+                    {% endif %}
+
+                    <form method="post" class="space-y-5">
+                        {% csrf_token %}
+
+                        <div>
+                            <label for="{{ form.username.id_for_label }}">Tên đăng nhập</label>
+                            {{ form.username }}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.password.id_for_label }}">Mật khẩu</label>
+                            {{ form.password }}
+                        </div>
+
+                        {% if next %}
+                        <input type="hidden" name="next" value="{{ next }}">
+                        {% endif %}
+
+                        <button
+                            type="submit"
+                            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white transition-all hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200"
+                        >
+                            <i data-lucide="log-in" class="h-4 w-4"></i>
+                            Đăng nhập vào FileBox
+                        </button>
+                    </form>
+
+                    <div class="mt-5 flex items-center justify-between gap-3 text-sm">
+                        <a href="{% url 'password_reset' %}" class="font-medium text-blue-600 hover:text-blue-700 hover:underline">
+                            Quên mật khẩu?
+                        </a>
+                        <a href="{% url 'register' %}" class="font-medium text-gray-600 hover:text-blue-600 hover:underline">
+                            Tạo tài khoản
+                        </a>
+                    </div>
+
+                    <div class="mt-6 rounded-2xl bg-gray-50 px-4 py-3 text-sm text-gray-500">
+                        Mẹo: dùng tài khoản quản trị để truy cập đầy đủ tính năng quản lý tệp.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

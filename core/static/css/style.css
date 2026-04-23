@@ -1,0 +1,33 @@
+/* --- BIẾN HỆ THỐNG (Dễ dàng thay đổi để làm tính năng Theme) --- */
+:root {
+    --primary-blue: #2563eb;
+    --primary-hover: #1d4ed8;
+    --bg-main: #f8fafc;
+    --text-main: #111827;
+    --text-muted: #64748b;
+    --border-color: #f1f5f9;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-main);
+    color: var(--text-main);
+}
+
+/* Tùy chỉnh thanh cuộn cho bảng chi tiết */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 10px;
+}
+
+/* Hiệu ứng mờ cho Modal */
+.modal-overlay {
+    background-color: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(4px);
+}

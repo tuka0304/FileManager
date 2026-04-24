@@ -142,4 +142,4 @@ def dashboard_view(request):
 
 def teptin_view(request):
     # Logic for handling "Tệp tin" page
-    return render(request, 'tep_tin.html')
+    return render(request, 'teptin.html')

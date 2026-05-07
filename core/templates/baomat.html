@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Bảo mật - FileBox{% endblock %}
+
+{% block content %}
+    <!-- Dán toàn bộ thẻ <main> từ [source: 8] vào đây -->
+<main class="flex-1 overflow-y-auto p-8 scroll-smooth">
+    <div class="flex flex-col h-full min-h-[calc(100vh-10rem)]">
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Trung tâm Bảo mật</h1>
+                <p class="mt-1 text-gray-500">Bảo vệ tài khoản và tệp tin của bạn khỏi các mối đe dọa.</p>
+            </div>
+            <button class="flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-100 transition-colors border border-blue-200">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Quét toàn bộ
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Overall Status -->
+            <div class="bg-emerald-500 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-6 shadow-sm ring-1 ring-emerald-500/20 text-white flex flex-col items-center justify-center text-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <div class="absolute bottom-0 left-0 w-40 h-40 bg-emerald-300 opacity-20 rounded-full blur-xl"></div>
+                
+                <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 ring-8 ring-white/10 relative z-10">
+                    <i data-lucide="shield-check" class="w-10 h-10 text-white"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-2">Đang được bảo vệ</h2>
+                <p class="text-emerald-50 mb-4">Hệ thống an toàn. Không phát hiện mối đe dọa nào trong 30 ngày qua.</p>
+                <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">Điểm số: 100/100</span>
+            </div>
+
+            <!-- Security Modules -->
+            <div class="lg:col-span-2 grid grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm ring-1 ring-gray-100 hover:shadow-md transition-shadow flex flex-col justify-between cursor-pointer border-t-4 border-t-emerald-500">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
+                            <i data-lucide="activity" class="w-5 h-5"></i>
+                        </div>
+                        <span class="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                            <i data-lucide="check" class="w-3 h-3"></i> Đang chạy
+                        </span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900 mb-1">Bảo vệ thời gian thực</h3>
+                        <p class="text-sm text-gray-500">Tự động quét tệp mới được tải lên và theo dõi hành vi đáng ngờ.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-5 rounded-2xl shadow-sm ring-1 ring-gray-100 hover:shadow-md transition-shadow flex flex-col justify-between cursor-pointer border-t-4 border-t-blue-500">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+                            <i data-lucide="globe" class="w-5 h-5"></i>
+                        </div>
+                        <span class="flex items-center gap-1 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+                            <i data-lucide="check" class="w-3 h-3"></i> Bật
+                        </span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900 mb-1">Bảo mật mạng</h3>
+                        <p class="text-sm text-gray-500">Mã hóa kết nối truyền dữ liệu, chặn tracker và bot độc hại.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Log -->
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 flex-1 flex flex-col">
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-bold text-gray-900 text-lg">Hoạt động bảo mật gần đây</h3>
+                <button class="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">Bộ lọc</button>
+            </div>
+            <div class="p-4 space-y-1">
+                <div class="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+                    <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-orange-50 text-orange-500">
+                        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-gray-900">Đã đăng nhập trên thiết bị mới</h4>
+                        <p class="text-sm text-gray-500">Chrome trên Windows 11, TP.HCM</p>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 whitespace-nowrap">2 giờ trước</span>
+                </div>
+                <div class="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+                    <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-emerald-50 text-emerald-500">
+                        <i data-lucide="lock" class="w-5 h-5"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="font-bold text-gray-900">Mã hóa hoàn tất 12 tệp</h4>
+                        <p class="text-sm text-gray-500">Thư mục 'Dự án mật'</p>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 whitespace-nowrap">Hôm qua</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

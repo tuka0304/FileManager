@@ -1,0 +1,12 @@
+# Bỏ qua các file chứa khóa bảo mật
+credentials.json
+token.json
+.env
+
+# Bỏ qua môi trường ảo và rác hệ thống
+venv/
+__pycache__/
+*.pyc
+
+# Bỏ qua database (tránh lộ dữ liệu test)
+db.sqlite3

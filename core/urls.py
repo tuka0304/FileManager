@@ -17,5 +17,8 @@ urlpatterns = [
     path('chuyen-file/', views.chuyenfile_view, name='chuyen-file'),
     path('bao-mat/', views.baomat_view, name='bao-mat'),
     path('ky-gui/', views.kygui_view, name='ky-gui'),
+    path('ky-gui/unlock/', views.unlock_vault, name='unlock_vault'),
+    path('ky-gui/lock/', views.lock_vault, name='lock_vault'),
+    path('ky-gui/download/<str:file_id>/', views.download_vault_file, name='download_vault'),
     path('cai-dat/', views.caidat_view, name='cai-dat'),
 ]

@@ -7,14 +7,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login
 from django.contrib.auth.forms import UserCreationForm
 from django.core.files.storage import FileSystemStorage
-from django.http import FileResponse, JsonResponse
+from django.http import FileResponse, JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
 import json
 
 # Import các models của bạn (Đảm bảo trong models.py đã có những class này)
 from .models import UserProfile, TransferHistory, SecuredVault, QuickShare, ReceiveHistory, Notification
 
-from .drive_utils import upload_to_drive, list_drive_files
+from .drive_utils import upload_to_drive, list_drive_files, download_from_drive
 
 # ==========================================
 # HÀM BỔ TRỢ
@@ -343,41 +343,67 @@ def baomat_view(request):
 def kygui_view(request):
     """Xử lý trang kygui.html - Đẩy file lên Google Drive"""
     error = None
+    is_locked = not request.session.get('vault_unlocked', False)
+
     if request.method == 'POST' and request.FILES.get('vault_file'):
         try:
             uploaded_file = request.FILES['vault_file']
-            upload_to_drive(uploaded_file, uploaded_file.name, uploaded_file.content_type)
+            upload_to_drive(uploaded_file, uploaded_file.name, uploaded_file.content_type, request.user.id)
             return redirect('ky-gui')
         except Exception as e:
             error = f"Lỗi upload Google Drive: {str(e)}"
 
     drive_files = []
-    try:
-        raw_files = list_drive_files()
-        for f in raw_files:
-            size_bytes = int(f.get('size', 0))
-            if size_bytes >= 1024 * 1024:
-                size_str = f"{round(size_bytes / (1024 * 1024), 2)} MB"
-            else:
-                size_str = f"{round(size_bytes / 1024, 2)} KB"
-                
-            try:
-                dt = datetime.datetime.strptime(f.get('createdTime'), "%Y-%m-%dT%H:%M:%S.%fZ")
-                time_str = dt.strftime("%H:%M - %d/%m/%Y")
-            except Exception:
-                time_str = f.get('createdTime')
-                
-            drive_files.append({
-                'id': f.get('id'),
-                'name': f.get('name'),
-                'size': size_str,
-                'createdTime': time_str,
-                'mimeType': f.get('mimeType')
-            })
-    except Exception as e:
-        error = f"Lỗi lấy danh sách từ Google Drive: {str(e)}"
+    if not is_locked:
+        try:
+            raw_files = list_drive_files(request.user.id)
+            for f in raw_files:
+                size_bytes = int(f.get('size', 0))
+                if size_bytes >= 1024 * 1024:
+                    size_str = f"{round(size_bytes / (1024 * 1024), 2)} MB"
+                else:
+                    size_str = f"{round(size_bytes / 1024, 2)} KB"
+                    
+                try:
+                    dt = datetime.datetime.strptime(f.get('createdTime'), "%Y-%m-%dT%H:%M:%S.%fZ")
+                    time_str = dt.strftime("%H:%M - %d/%m/%Y")
+                except Exception:
+                    time_str = f.get('createdTime')
+                    
+                drive_files.append({
+                    'id': f.get('id'),
+                    'name': f.get('name'),
+                    'size': size_str,
+                    'createdTime': time_str,
+                    'mimeType': f.get('mimeType')
+                })
+        except Exception as e:
+            error = f"Lỗi lấy danh sách từ Google Drive: {str(e)}"
 
-    return render(request, 'kygui.html', {'drive_files': drive_files, 'error': error})
+    return render(request, 'kygui.html', {'drive_files': drive_files, 'error': error, 'is_locked': is_locked})
+
+@login_required
+def unlock_vault(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        if request.user.check_password(password):
+            request.session['vault_unlocked'] = True
+    return redirect('ky-gui')
+
+@login_required
+def lock_vault(request):
+    request.session['vault_unlocked'] = False
+    return redirect('ky-gui')
+
+@login_required
+def download_vault_file(request, file_id):
+    if not request.session.get('vault_unlocked', False):
+        return redirect('ky-gui')
+    
+    file_bytes, mime_type, file_name = download_from_drive(file_id)
+    response = HttpResponse(file_bytes, content_type=mime_type)
+    response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+    return response
 
 @login_required
 def caidat_view(request):

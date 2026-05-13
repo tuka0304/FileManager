@@ -633,3 +633,6 @@ def toggle_lock_user(request, user_id):
         except User.DoesNotExist:
             pass
     return redirect('admin_dashboard')
+
+def custom_404(request, exception):
+    return render(request, '404.html', status=404)

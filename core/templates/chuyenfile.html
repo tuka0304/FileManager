@@ -31,8 +31,13 @@
                 <h3 class="text-xl font-bold text-gray-900 mb-2">Gửi tệp</h3>
                 <p class="text-gray-500 mb-6 max-w-xs mx-auto">Tạo mã PIN an toàn để chia sẻ tệp tức thì qua Đám mây.</p>
                 
-                <form method="POST" enctype="multipart/form-data" class="w-full">
+                <form method="POST" enctype="multipart/form-data" class="w-full flex flex-col items-center gap-4">
                     {% csrf_token %}
+                    <select name="expiry_time" class="w-full max-w-xs border border-gray-200 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-sm text-gray-700 font-medium cursor-pointer">
+                        <option value="10">Hết hạn sau 10 phút</option>
+                        <option value="60" selected>Hết hạn sau 1 giờ</option>
+                        <option value="1440">Hết hạn sau 24 giờ</option>
+                    </select>
                     <label class="cursor-pointer flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20 w-full max-w-xs mx-auto">
                         <i data-lucide="upload" class="w-5 h-5"></i>
                         <span>Chọn tệp cần gửi</span>
@@ -70,12 +75,12 @@
                         <i data-lucide="download" class="w-8 h-8"></i>
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 mb-2">Nhận tệp</h3>
-                    <p class="text-gray-500 mb-6 max-w-xs mx-auto">Nhập mã PIN 6 số để tải tệp xuống thiết bị này ngay lập tức.</p>
+                    <p class="text-gray-500 mb-6 max-w-xs mx-auto">Nhập mã PIN 10 số để tải tệp xuống thiết bị này ngay lập tức.</p>
                     
                     <form method="POST" class="w-full max-w-xs mx-auto">
                         {% csrf_token %}
                         <div class="flex gap-2">
-                            <input type="text" name="pin_code" maxlength="6" placeholder="Nhập PIN (6 số)" class="w-full text-center tracking-widest text-lg font-bold border border-gray-200 rounded-xl px-4 py-3 text-gray-900 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-500 transition-all uppercase placeholder:font-normal placeholder:tracking-normal placeholder:text-gray-400">
+                            <input type="text" name="pin_code" maxlength="10" placeholder="Nhập mã 10 số" class="w-full text-center tracking-widest text-lg font-bold border border-gray-200 rounded-xl px-4 py-3 text-gray-900 bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-500 transition-all uppercase placeholder:font-normal placeholder:tracking-normal placeholder:text-gray-400">
                             <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-green-700 transition-colors shadow-sm shadow-green-600/20 whitespace-nowrap">
                                 Tải về
                             </button>
@@ -156,7 +161,7 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 text-gray-900 font-medium">
+                                        <td class="px-6 py-4 text-gray-900 font-medium whitespace-nowrap">
                                             <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded font-mono tracking-widest">{{ item.pin_code }}</span>
                                         </td>
                                         <td class="px-6 py-4">
@@ -177,7 +182,7 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 text-gray-900 font-medium">
+                                        <td class="px-6 py-4 text-gray-900 font-medium whitespace-nowrap">
                                             <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded font-mono tracking-widest">{{ item.pin_code }}</span>
                                         </td>
                                         <td class="px-6 py-4">

@@ -1,6 +1,9 @@
 import random
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils import timezone
 from django.shortcuts import render
 
 
@@ -23,12 +26,34 @@ from django.contrib.auth.models import User
 
 # 1. Mở rộng thông tin Người dùng (Cho trang Cài đặt)
 class UserProfile(models.Model):
+    PLAN_CHOICES = [
+        ('basic', 'Basic (Miễn phí)'),
+        ('pro', 'Pro (49.000đ/tháng)'),
+        ('premium', 'Premium (99.000đ/tháng)'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
-    job_role = models.CharField(max_length=100, blank=True, null=True)
+    avatar = models.ImageField(upload_to='avatars/', default='default_avatar.png')
+    auto_deep_scan = models.BooleanField(default=False)
+    dark_mode = models.BooleanField(default=False)
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default='basic')
+    plan_expiry_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.user.username
+
+    @property
+    def unread_count(self):
+        return self.user.notification_set.filter(is_read=False).count()
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.userprofile.save()
 
 # 2. Lịch sử Chuyển tệp nhanh
 class TransferHistory(models.Model):
@@ -61,13 +86,14 @@ class QuickShare(models.Model):
     file = models.FileField(upload_to='quick_shares/')
     file_name = models.CharField(max_length=255)
     file_size = models.FloatField()
-    pin_code = models.CharField(max_length=6, unique=True, blank=True)
+    pin_code = models.CharField(max_length=10, unique=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.pin_code:
             while True:
-                pin = ''.join([str(random.randint(0, 9)) for _ in range(6)])
+                pin = str(random.randint(0, 9999999999)).zfill(10)
                 if not QuickShare.objects.filter(pin_code=pin).exists():
                     self.pin_code = pin
                     break
@@ -81,7 +107,7 @@ class ReceiveHistory(models.Model):
     receiver = models.ForeignKey(User, on_delete=models.CASCADE)
     file_name = models.CharField(max_length=255)
     file_size = models.FloatField()
-    pin_code = models.CharField(max_length=6)
+    pin_code = models.CharField(max_length=10)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -99,3 +125,23 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification for {self.user.username}: {self.message}"
+
+# 7. Nhật ký hoạt động bảo mật
+class SecurityLog(models.Model):
+    LOG_TYPES = (
+        ('warning', 'Warning'),
+        ('success', 'Success'),
+        ('info', 'Info'),
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    action = models.CharField(max_length=255)
+    details = models.CharField(max_length=255, blank=True)
+    log_type = models.CharField(max_length=20, choices=LOG_TYPES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.log_type.upper()}] {self.user.username} - {self.action}"

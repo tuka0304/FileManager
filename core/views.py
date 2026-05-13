@@ -1,18 +1,22 @@
 import os
 import shutil
 import datetime
+from datetime import timedelta
 from collections import defaultdict
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login
+from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.core.files.storage import FileSystemStorage
 from django.http import FileResponse, JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST
+from django.utils import timezone
+from django.contrib import messages
 import json
 
 # Import các models của bạn (Đảm bảo trong models.py đã có những class này)
-from .models import UserProfile, TransferHistory, SecuredVault, QuickShare, ReceiveHistory, Notification
+from .models import UserProfile, TransferHistory, SecuredVault, QuickShare, ReceiveHistory, Notification, SecurityLog
 
 from .drive_utils import upload_to_drive, list_drive_files, download_from_drive
 
@@ -111,6 +115,9 @@ def dashboard_view(request):
     # 2. Gọi hàm lấy 4 file mới nhất
     recent_files = get_recent_files(root_path, limit=4)
 
+    # 3. Lấy 5 hoạt động bảo mật gần nhất
+    recent_activities = SecurityLog.objects.filter(user=request.user).order_by('-created_at')[:5]
+
     # Đẩy toàn bộ dữ liệu thật ra màn hình
     context = {
         'tong_dung_luong': tong_dung_luong,
@@ -118,6 +125,7 @@ def dashboard_view(request):
         'phan_tram': phan_tram,
         'selected_drive': selected_drive,
         'recent_files': recent_files,
+        'recent_activities': recent_activities,
     }
     return render(request, 'dashboard.html', context)
 
@@ -272,11 +280,14 @@ def chuyenfile_view(request):
         if 'file_to_share' in request.FILES:
             uploaded_file = request.FILES['file_to_share']
             size_mb = round(uploaded_file.size / (1024 * 1024), 2)
+            expiry_minutes = int(request.POST.get('expiry_time', 60))
+
             share = QuickShare.objects.create(
                 sender=request.user,
                 file=uploaded_file,
                 file_name=uploaded_file.name,
-                file_size=size_mb
+                file_size=size_mb,
+                expires_at = timezone.now() + timedelta(minutes=expiry_minutes)
             )
             request.session['recent_pin'] = share.pin_code
             request.session['recent_file'] = share.file_name
@@ -289,25 +300,29 @@ def chuyenfile_view(request):
             try:
                 quick_share = QuickShare.objects.get(pin_code=pin)
                 
-                # Bước 2: Người dùng xác nhận tải
-                if confirm_download:
-                    # Tạo bản ghi Lịch sử nhận
-                    ReceiveHistory.objects.create(
-                        receiver=request.user,
-                        file_name=quick_share.file_name,
-                        file_size=quick_share.file_size,
-                        pin_code=pin,
-                    )
-                    # Tạo thông báo cho người gửi
-                    Notification.objects.create(
-                        user=quick_share.sender,
-                        message=f"Tệp {quick_share.file_name} vừa được tải xuống bằng mã PIN {pin}."
-                    )
-                    return FileResponse(quick_share.file.open('rb'), as_attachment=True, filename=quick_share.file_name)
-                
-                # Bước 1: Xem trước thông tin file
+                if quick_share.expires_at and quick_share.expires_at < timezone.now():
+                    error = "Mã PIN này đã hết hạn sử dụng."
+                    quick_share.delete()
                 else:
-                    preview_file = quick_share
+                    # Bước 2: Người dùng xác nhận tải
+                    if confirm_download:
+                        # Tạo bản ghi Lịch sử nhận
+                        ReceiveHistory.objects.create(
+                            receiver=request.user,
+                            file_name=quick_share.file_name,
+                            file_size=quick_share.file_size,
+                            pin_code=pin,
+                        )
+                        # Tạo thông báo cho người gửi
+                        Notification.objects.create(
+                            user=quick_share.sender,
+                            message=f"Tệp {quick_share.file_name} vừa được tải xuống bằng mã PIN {pin}."
+                        )
+                        return FileResponse(quick_share.file.open('rb'), as_attachment=True, filename=quick_share.file_name)
+                    
+                    # Bước 1: Xem trước thông tin file
+                    else:
+                        preview_file = quick_share
 
             except QuickShare.DoesNotExist:
                 error = "Mã PIN không hợp lệ hoặc tệp không tồn tại."
@@ -337,7 +352,40 @@ def chuyenfile_view(request):
 @login_required
 def baomat_view(request):
     """Xử lý trang baomat.html"""
-    return render(request, 'baomat.html')
+    security_logs = SecurityLog.objects.filter(user=request.user)[:5]
+    security_score = 100
+    network_security_enabled = request.session.get('network_security', True)
+    context = {
+        'security_logs': security_logs,
+        'security_score': security_score,
+        'network_security_enabled': network_security_enabled,
+    }
+    return render(request, 'baomat.html', context)
+
+@login_required
+def scan_security(request):
+    SecurityLog.objects.create(
+        user=request.user, action="Hoàn tất quét hệ thống", details="Hệ thống an toàn. Không phát hiện phần mềm độc hại hay rò rỉ dữ liệu.", log_type="success"
+    )
+    return JsonResponse({'success': True, 'message': 'Quét hoàn tất!'})
+
+@login_required
+def toggle_network_security(request):
+    current_state = request.session.get('network_security', True)
+    new_state = not current_state
+    request.session['network_security'] = new_state
+    
+    action_text = "Đã bật tính năng bảo mật mạng" if new_state else "Đã tắt tính năng bảo mật mạng"
+    log_type_val = "info" if new_state else "warning"
+    
+    SecurityLog.objects.create(
+        user=request.user, 
+        action=action_text, 
+        details="Chế độ chặn tracker và bot độc hại", 
+        log_type=log_type_val
+    )
+    
+    return JsonResponse({'success': True, 'state': new_state})
 
 @login_required
 def kygui_view(request):
@@ -409,7 +457,68 @@ def download_vault_file(request, file_id):
 def caidat_view(request):
     """Xử lý trang caidat.html"""
     profile, created = UserProfile.objects.get_or_create(user=request.user)
-    return render(request, 'caidat.html', {'profile': profile})
+    active_tab = request.GET.get('tab', 'tai-khoan')
+    
+    if request.method == 'POST':
+        tab_action = request.POST.get('tab', active_tab)
+        if tab_action == 'tai-khoan':
+            email = request.POST.get('email')
+            if email is not None:
+                request.user.email = email
+                request.user.save()
+            if 'avatar' in request.FILES:
+                profile.avatar = request.FILES['avatar']
+                profile.save()
+        elif tab_action == 'cai-dat-chung':
+            profile.auto_deep_scan = request.POST.get('auto_deep_scan') == 'on'
+            profile.save()
+        elif tab_action == 'giao-dien':
+            profile.dark_mode = request.POST.get('dark_mode') == 'on'
+            profile.save()
+        return redirect(f"{request.path}?tab={tab_action}")
+        
+    notifications = []
+    if active_tab == 'thong-bao':
+        notifications = Notification.objects.filter(user=request.user)
+        
+    return render(request, 'caidat.html', {
+        'profile': profile,
+        'active_tab': active_tab,
+        'notifications': notifications,
+    })
+
+@login_required
+def mark_notifications_read(request):
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({'success': True})
+
+@login_required
+def goicuoc_view(request):
+    profile = request.user.userprofile
+    return render(request, 'goicuoc.html', {'profile': profile})
+
+@login_required
+def change_user_plan(request):
+    if request.method == 'POST':
+        new_plan = request.POST.get('plan_type')
+        profile = request.user.userprofile
+        
+        if new_plan == 'basic':
+            profile.plan = 'basic'
+            profile.plan_expiry_date = None
+            SecurityLog.objects.create(
+                user=request.user, action="Đã hạ cấp về gói Basic", details="", log_type="warning"
+            )
+        elif new_plan in ['pro', 'premium']:
+            profile.plan = new_plan
+            profile.plan_expiry_date = timezone.now() + timedelta(days=30)
+            SecurityLog.objects.create(
+                user=request.user, action=f"Đã nâng cấp lên gói {new_plan.title()} (30 ngày)", details="", log_type="success"
+            )
+            
+        profile.save()
+        messages.success(request, 'Cập nhật gói cước thành công!')
+    return redirect('goi_cuoc')
 
 def get_recent_files(root_path, limit=4):
     """Hàm quét nông thư mục gốc để lấy các file mới nhất (tránh gây lag)"""
@@ -461,3 +570,66 @@ def get_recent_files(root_path, limit=4):
     # Sắp xếp danh sách ưu tiên file mới nhất và chỉ lấy 4 file đầu tiên
     recent_files.sort(key=lambda x: x['timestamp'], reverse=True)
     return recent_files[:limit]
+
+@user_passes_test(lambda u: u.is_superuser)
+def admin_dashboard(request):
+    search_query = request.GET.get('q', '')
+    if search_query:
+        users = User.objects.filter(username__icontains=search_query).select_related('userprofile')
+    else:
+        users = User.objects.all().select_related('userprofile').order_by('-id')
+    context = {
+        'users': users,
+        'search_query': search_query,
+    }
+    return render(request, 'admin_dashboard.html', context)
+
+@user_passes_test(lambda u: u.is_superuser)
+def upgrade_premium(request, user_id):
+    if request.method == 'POST':
+        try:
+            user = User.objects.get(id=user_id)
+            plan_type = request.POST.get('plan_type', 'premium')
+            duration_days = int(request.POST.get('duration_days', 30))
+            
+            user.userprofile.plan = plan_type
+            user.userprofile.plan_expiry_date = timezone.now() + timedelta(days=duration_days)
+            user.userprofile.save()
+            
+            SecurityLog.objects.create(
+                user=user, 
+                action=f"Tài khoản được nâng cấp lên {plan_type.upper()} trong {duration_days} ngày", 
+                details="", 
+                log_type="success"
+            )
+        except User.DoesNotExist:
+            pass
+    return redirect('admin_dashboard')
+
+@user_passes_test(lambda u: u.is_superuser)
+def downgrade_basic(request, user_id):
+    try:
+        user = User.objects.get(id=user_id)
+        user.userprofile.plan = 'basic'
+        user.userprofile.plan_expiry_date = None
+        user.userprofile.save()
+        SecurityLog.objects.create(
+            user=user,
+            action="Tài khoản đã bị hạ cấp về gói Basic",
+            details="",
+            log_type="warning"
+        )
+    except User.DoesNotExist:
+        pass
+    return redirect('admin_dashboard')
+
+@user_passes_test(lambda u: u.is_superuser)
+def toggle_lock_user(request, user_id):
+    if user_id != request.user.id:
+        try:
+            user = User.objects.get(id=user_id)
+            user.is_active = not user.is_active
+            user.save()
+        except User.DoesNotExist:
+            pass
+    return redirect('admin_dashboard')

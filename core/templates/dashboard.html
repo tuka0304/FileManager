@@ -1,363 +1,106 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trang chủ - FileBox</title>
-    
-    <!-- Tailwind CSS (CDN) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons (CDN) -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Font Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
-</head>
-<body class="bg-slate-50 text-gray-900 antialiased overflow-hidden h-screen w-full flex">
+{% extends 'base.html' %}
 
-    <!-- Sidebar -->
-    <aside class="flex h-full w-64 flex-col bg-white border-r border-gray-100 shrink-0">
-        <div class="flex h-20 items-center px-6">
-            <a href="#" class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-6 w-6">
-                        <path d="M4 7V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M4 17v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3M2 12h20" />
-                    </svg>
-                </div>
-                <span class="text-xl font-bold text-gray-900">FileBox</span>
-            </a>
-        </div>
-        
-        <nav class="flex-1 space-y-2 px-4 py-4">
-            <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors bg-blue-600 text-white shadow-sm shadow-blue-600/20">
-                <i data-lucide="home" class="h-5 w-5 text-white"></i>
-                Trang chủ
-            </a>
-            <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
-                <i data-lucide="file" class="h-5 w-5 text-gray-400"></i>
-                Tệp tin
-            </a>
-            <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
-                <i data-lucide="trash-2" class="h-5 w-5 text-gray-400"></i>
-                Quét dọn
-            </a>
-            <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
-                <i data-lucide="send" class="h-5 w-5 text-gray-400"></i>
-                Chuyển file
-            </a>
-            <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
-                <i data-lucide="arrow-down-to-line" class="h-5 w-5 text-gray-400"></i>
-                Ký gửi
-            </a>
-            <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
-                <i data-lucide="shield" class="h-5 w-5 text-gray-400"></i>
-                Bảo mật
-            </a>
-            <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
-                <i data-lucide="settings" class="h-5 w-5 text-gray-400"></i>
-                Cài đặt
-            </a>
-        </nav>
-        
-        <div class="p-4">
-            <div class="rounded-xl bg-gray-50 p-4">
-                <div class="flex items-center gap-3">
-                    <div class="h-10 w-10 rounded-full bg-gray-200"></div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">Người dùng</p>
-                        <p class="text-xs text-gray-500">Premium Plan</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </aside>
+{% block title %}Trang chủ - FileBox{% endblock %}
 
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col h-full overflow-hidden">
-        
-        <!-- Header -->
-        <header class="flex h-20 shrink-0 items-center justify-between border-b border-gray-100 bg-white px-8">
-            <div class="flex w-full max-w-md items-center gap-2 rounded-xl bg-gray-50 px-4 py-2.5 ring-1 ring-gray-200 focus-within:ring-2 focus-within:ring-blue-600 transition-shadow">
-                <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
-                <input type="text" placeholder="Tìm kiếm tệp, thư mục..." class="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-500 outline-none" />
-            </div>
-            <div class="flex items-center gap-4">
-                <button class="relative rounded-xl p-2.5 text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors">
-                    <span class="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
-                    <i data-lucide="bell" class="h-6 w-6"></i>
-                </button>
-                <div class="h-10 w-10 overflow-hidden rounded-xl bg-gradient-to-tr from-blue-500 to-blue-600 shadow-sm shadow-blue-500/20">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100&h=100" alt="Avatar" class="h-full w-full object-cover" />
-                </div>
-            </div>
-        </header>
-
-        <!-- Dashboard / Main Content -->
-        <main class="flex-1 overflow-y-auto p-8 scroll-smooth">
-            
-            <div class="mb-8">
-                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Chào buổi sáng, Người dùng!</h1>
-                <p class="mt-1 text-gray-500">Đây là tổng quan hệ thống tệp của bạn hôm nay.</p>
-            </div>
-
-            <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <!-- Storage Overview Chart -->
-                <div class="flex h-full w-full flex-col items-center justify-between rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
-                    <div class="flex w-full items-center justify-between mb-4">
-    <h3 class="text-lg font-semibold text-gray-900">Tổng quan dung lượng</h3>
-    
-    <div class="flex items-center gap-4">
-        
-        <form method="GET" action="" class="m-0">
-            <select name="drive" onchange="this.form.submit()" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer font-medium transition-colors">
-                <option value="C:" {% if selected_drive == 'C:' %}selected{% endif %}>Ổ đĩa C:</option>
-                <option value="D:" {% if selected_drive == 'D:' %}selected{% endif %}>Ổ đĩa D:</option>
-                <option value="E:" {% if selected_drive == 'E:' %}selected{% endif %}>Ổ đĩa E:</option>
-            </select>
-        </form>
-
-        <button onclick="document.getElementById('detailsModal').classList.remove('hidden')" type="button" class="text-sm font-medium text-blue-600 hover:text-blue-700">Chi tiết</button>
+{% block content %}
+<main class="flex-1 overflow-y-auto p-8 scroll-smooth">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Chào buổi sáng, {{ request.user.username }}!</h1>
+        <p class="mt-1 text-gray-500">Đây là tổng quan hệ thống tệp của bạn hôm nay.</p>
     </div>
-</div>
-                    
-                    <!-- Pure CSS/SVG Donut Chart (React Recharts replaced) -->
-                    <div class="relative flex-1 w-full min-h-[160px] flex items-center justify-center">
-                        <div class="relative w-40 h-40">
-                            <!-- Background track -->
-                            <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#EFF6FF" stroke-width="12"></circle>
-                                <!-- Progress track (60%) -->
-                                <circle cx="50" cy="50" r="40" fill="none" stroke="#2563EB" stroke-width="12" stroke-dasharray="251.2" stroke-dashoffset="100.48" stroke-linecap="round"></circle>
-                            </svg>
-                            <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                <span class="text-2xl font-bold text-gray-900">{{ da_su_dung }}</span>
-                                <span class="text-xs text-gray-500">/ {{ tong_dung_luong }} GB Đã dùng</span>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div class="mt-4 flex w-full items-center justify-between text-sm">
-                        <div class="flex items-center gap-2">
-                            <div class="h-3 w-3 rounded-full bg-blue-600"></div>
-                            <span class="text-gray-600">Tài liệu & Media</span>
-                        </div>
-                        <span class="font-semibold text-gray-900">{{ phan_tram }}%</span>
-                    </div>
-                </div>
-
-                <!-- Quick Actions & Security Alert -->
-                <div class="flex flex-col gap-6">
-                    <div class="flex flex-col justify-between items-start w-full bg-white p-6 rounded-2xl shadow-sm ring-1 ring-gray-100">
-                        <div class="flex w-full items-center justify-between mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Dọn dẹp nhanh</h3>
-                        </div>
-                        <div class="flex w-full gap-4">
-                            <button class="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl p-4 transition-all bg-blue-600 text-white hover:bg-blue-700">
-                                <i data-lucide="hard-drive" class="h-6 w-6"></i>
-                                <span class="text-sm font-medium">Quét dung lượng</span>
-                            </button>
-                            <button class="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl p-4 transition-all bg-white text-gray-700 hover:bg-gray-50 ring-1 ring-gray-200">
-                                <i data-lucide="search" class="h-6 w-6"></i>
-                                <span class="text-sm font-medium">Tìm file trùng lặp</span>
-                            </button>
-                            <button class="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl p-4 transition-all bg-white text-gray-700 hover:bg-gray-50 ring-1 ring-gray-200">
-                                <i data-lucide="folder-minus" class="h-6 w-6"></i>
-                                <span class="text-sm font-medium">Xóa thư mục trống</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-4 rounded-2xl bg-orange-50 p-6 ring-1 ring-orange-200 shadow-sm">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-100 text-orange-600">
-                            <i data-lucide="shield-alert" class="h-6 w-6"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-orange-900">Cảnh báo bảo mật</h4>
-                            <p class="text-sm text-orange-700">3 file có nguy cơ bảo mật cao cần được kiểm tra.</p>
-                        </div>
-                        <button class="rounded-lg bg-orange-600 px-4 py-2 text-sm font-medium text-white hover:bg-orange-700 transition-colors shadow-sm shadow-orange-600/20">
-                            Xử lý ngay
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Files -->
-            <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100 mt-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900">Tệp tin gần đây</h3>
-                    <button class="text-sm font-medium text-blue-600 hover:text-blue-700">Xem tất cả</button>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    
-                    <!-- File Card 1 -->
-                    <div class="flex flex-col justify-between rounded-xl border border-gray-100 bg-white p-4 hover:border-blue-100 hover:shadow-md transition-all cursor-pointer group">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex h-12 w-12 items-center justify-center rounded-xl text-blue-500 bg-blue-50">
-                                <i data-lucide="file-text" class="h-6 w-6"></i>
-                            </div>
-                            <button class="text-gray-400 hover:text-gray-600">
-                                <i data-lucide="more-vertical" class="h-5 w-5"></i>
-                            </button>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-900 truncate" title="Báo cáo Q1 2026.pdf">Báo cáo Q1 2026.pdf</p>
-                            <div class="mt-1 flex items-center justify-between text-xs text-gray-500">
-                                <span>2.4 MB</span>
-                                <span>Hôm nay, 10:30</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- File Card 2 -->
-                    <div class="flex flex-col justify-between rounded-xl border border-gray-100 bg-white p-4 hover:border-blue-100 hover:shadow-md transition-all cursor-pointer group">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex h-12 w-12 items-center justify-center rounded-xl text-purple-500 bg-purple-50">
-                                <i data-lucide="image" class="h-6 w-6"></i>
-                            </div>
-                            <button class="text-gray-400 hover:text-gray-600">
-                                <i data-lucide="more-vertical" class="h-5 w-5"></i>
-                            </button>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-900 truncate" title="Ảnh thiết kế giao diện.png">Ảnh thiết kế giao diện.png</p>
-                            <div class="mt-1 flex items-center justify-between text-xs text-gray-500">
-                                <span>12.8 MB</span>
-                                <span>Hôm qua</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- File Card 3 -->
-                    <div class="flex flex-col justify-between rounded-xl border border-gray-100 bg-white p-4 hover:border-blue-100 hover:shadow-md transition-all cursor-pointer group">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex h-12 w-12 items-center justify-center rounded-xl text-red-500 bg-red-50">
-                                <i data-lucide="video" class="h-6 w-6"></i>
-                            </div>
-                            <button class="text-gray-400 hover:text-gray-600">
-                                <i data-lucide="more-vertical" class="h-5 w-5"></i>
-                            </button>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-900 truncate" title="Video giới thiệu dự án.mp4">Video giới thiệu dự án.mp4</p>
-                            <div class="mt-1 flex items-center justify-between text-xs text-gray-500">
-                                <span>1.2 GB</span>
-                                <span>14/04/2026</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- File Card 4 -->
-                    <div class="flex flex-col justify-between rounded-xl border border-gray-100 bg-white p-4 hover:border-blue-100 hover:shadow-md transition-all cursor-pointer group">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex h-12 w-12 items-center justify-center rounded-xl text-green-500 bg-green-50">
-                                <i data-lucide="file-text" class="h-6 w-6"></i>
-                            </div>
-                            <button class="text-gray-400 hover:text-gray-600">
-                                <i data-lucide="more-vertical" class="h-5 w-5"></i>
-                            </button>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-gray-900 truncate" title="Danh sách khách hàng.xlsx">Danh sách khách hàng.xlsx</p>
-                            <div class="mt-1 flex items-center justify-between text-xs text-gray-500">
-                                <span>4.1 MB</span>
-                                <span>12/04/2026</span>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-<div id="detailsModal" class="{% if show_modal == 'false' %}hidden{% endif %} fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm transition-all">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col overflow-hidden m-4 border border-gray-100">
-        
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50">
-            <h3 class="text-lg font-bold text-gray-900">Chi tiết ổ đĩa {{ selected_drive }}</h3>
-            <div class="flex items-center gap-2 mt-1">
-    {% if not is_root %}
-    <a href="?drive={{ selected_drive }}&path={{ parent_path }}&show_modal=true&sort={{ sort_by }}" 
-       class="flex items-center gap-1 text-xs text-blue-600 hover:underline">
-        <i data-lucide="arrow-left" class="h-3 w-3"></i> Quay lại
-    </a>
-    {% endif %}
-    <span class="text-xs text-gray-400 truncate max-w-md">{{ current_path }}</span>
-</div>
-            
-            <div class="flex items-center gap-4">
-                <form method="GET" action="" class="m-0 flex items-center gap-2">
-                    <input type="hidden" name="drive" value="{{ selected_drive }}">
-                    <input type="hidden" name="show_modal" value="true">
-                    
-                    <span class="text-sm text-gray-500">Sắp xếp:</span>
-                    <select name="sort" onchange="this.form.submit()" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer">
-                        <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Tên (A-Z)</option>
-                        <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Tên (Z-A)</option>
-                        <option value="size_desc" {% if sort_by == 'size_desc' %}selected{% endif %}>Dung lượng (Giảm dần)</option>
-                        <option value="size_asc" {% if sort_by == 'size_asc' %}selected{% endif %}>Dung lượng (Tăng dần)</option>
-                        <option value="date_desc" {% if sort_by == 'date_desc' %}selected{% endif %}>Ngày tải (Mới nhất)</option>
-                        <option value="date_asc" {% if sort_by == 'date_asc' %}selected{% endif %}>Ngày tải (Cũ nhất)</option>
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Biểu đồ thống kê ổ đĩa -->
+        <div id="tour-storage" class="flex h-full w-full flex-col items-center justify-between rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <div class="flex w-full items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Tổng quan dung lượng</h3>
+                <!-- Dropdown chọn ổ đĩa (Tự động submit khi chọn) -->
+                <form method="GET" action="" class="m-0">
+                    <select name="drive" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 bg-gray-50 hover:bg-gray-100 cursor-pointer font-medium" onchange="this.form.submit()">
+                        <option value="C:" {% if selected_drive == 'C:' %}selected{% endif %}>Ổ đĩa C:</option>
+                        <option value="D:" {% if selected_drive == 'D:' %}selected{% endif %}>Ổ đĩa D:</option>
+                        <option value="E:" {% if selected_drive == 'E:' %}selected{% endif %}>Ổ đĩa E:</option>
                     </select>
                 </form>
-
-                <button onclick="document.getElementById('detailsModal').classList.add('hidden')" class="text-gray-400 hover:text-red-500 transition-colors p-1">
-                    <i data-lucide="x" class="h-6 w-6"></i>
-                </button>
+            </div>
+            
+            <div class="relative flex-1 w-full min-h-[160px] flex items-center justify-center">
+                <div class="relative w-40 h-40">
+                    <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#EFF6FF" stroke-width="12"></circle>
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#2563EB" stroke-width="12" stroke-dasharray="251.2" style="stroke-dashoffset: calc(251.2 - (251.2 * {{ phan_tram|default:0 }} / 100)); stroke-linecap: round; transition: all 1s ease-out;"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="text-2xl font-bold text-gray-900">{{ da_su_dung }}</span>
+                        <span class="text-xs text-gray-500">/ {{ tong_dung_luong }} GB</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="overflow-y-auto flex-1 p-6 bg-white">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-100">
-                        <th class="pb-3 pl-2">Tên Tệp / Thư mục</th>
-                        <th class="pb-3 text-right pr-4">Kích thước</th>
-                        <th class="pb-3 text-right">Ngày cập nhật</th>
-                    </tr>
-                </thead>
-                <tbody class="text-sm divide-y divide-gray-50">
-                    {% for file in file_list %}
-                    <tr class="hover:bg-blue-50/50 transition-colors group">
-                        <td class="py-3 pl-2">
-    {% if file.is_dir %}
-    <a href="?drive={{ selected_drive }}&path={{ file.full_path }}&show_modal=true&sort={{ sort_by }}" 
-       class="flex items-center gap-3 group">
-        <i data-lucide="folder" class="h-5 w-5 text-blue-400 fill-blue-50"></i>
-        <span class="font-medium text-gray-700 group-hover:text-blue-700">{{ file.name }}</span>
-    </a>
-    {% else %}
-    <div class="flex items-center gap-3">
-        <i data-lucide="file" class="h-5 w-5 text-gray-400"></i>
-        <span class="text-gray-700">{{ file.name }}</span>
-    </div>
-    {% endif %}
-</td>
-                        <td class="py-3 text-right pr-4 text-gray-500">
-    {{ file.size }} MB
-</td>
-                        <td class="py-3 text-right text-gray-500">{{ file.date }}</td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="3" class="py-8 text-center text-gray-500">Thư mục trống hoặc không có quyền truy cập.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <!-- Lối tắt nhanh -->
+        <div class="flex flex-col gap-6">
+            <div id="tour-quicknav" class="flex flex-col justify-between items-start w-full bg-white p-6 rounded-2xl shadow-sm ring-1 ring-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Điều hướng nhanh</h3>
+                <div class="flex w-full gap-4">
+                    <a href="{% url 'tep-tin' %}" class="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl p-4 transition-all bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-600/20">
+                        <i data-lucide="folder-search" class="h-6 w-6"></i>
+                        <span class="text-sm font-medium">Quét chi tiết tệp</span>
+                    </a>
+                    <a href="{% url 'quet-don' %}?action=duplicates&drive={{ selected_drive|default:'C:' }}" class="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl p-4 transition-all bg-white text-gray-700 hover:bg-gray-50 ring-1 ring-gray-200">
+                        <i data-lucide="copy" class="h-6 w-6"></i>
+                        <span class="text-sm font-medium">Tìm file trùng lặp</span>
+                    </a>
+                    <a href="{% url 'quet-don' %}?action=empty_folders&drive={{ selected_drive|default:'C:' }}" class="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl p-4 transition-all bg-white text-gray-700 hover:bg-gray-50 ring-1 ring-gray-200">
+                        <i data-lucide="folder-x" class="h-6 w-6"></i>
+                        <span class="text-sm font-medium">Xóa thư mục trống</span>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-        </main>
+
+    <!-- Hoạt động hệ thống gần đây -->
+    <div id="tour-activity" class="mt-6 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 flex-1 flex flex-col">
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+            <h3 class="font-bold text-gray-900 text-lg">Hoạt động hệ thống gần đây</h3>
+        </div>
+        <div class="p-4 space-y-1">
+            {% for activity in recent_activities %}
+            <div class="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+                {% if activity.log_type == 'warning' %}
+                <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-orange-50 text-orange-500">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                </div>
+                {% elif activity.log_type == 'success' %}
+                <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-emerald-50 text-emerald-500">
+                    <i data-lucide="lock" class="w-5 h-5"></i>
+                </div>
+                {% else %}
+                <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-blue-50 text-blue-500">
+                    <i data-lucide="info" class="w-5 h-5"></i>
+                </div>
+                {% endif %}
+                
+                <div class="flex-1">
+                    <h4 class="font-bold text-gray-900">{{ activity.action }}</h4>
+                    <p class="text-sm text-gray-500">{{ activity.details }}</p>
+                </div>
+                <span class="text-xs font-medium text-gray-400 whitespace-nowrap">{{ activity.created_at|timesince }} trước</span>
+            </div>
+            {% empty %}
+            <div class="p-4 text-center text-gray-500 text-sm">
+                Hệ thống chưa ghi nhận hoạt động nào.
+            </div>
+            {% endfor %}
+        </div>
     </div>
 
-    <!-- Initialize Lucide Icons -->
-    <script>
-        lucide.createIcons();
-    </script>
-</body>
-</html>
+    <!-- Nút Bí kíp Tân thủ -->
+    <button id="btn-tutorial" onclick="startTutorialTour()" class="fixed bottom-8 right-8 z-40 w-16 h-16 rounded-full bg-gradient-to-r from-orange-400 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/40 hover:scale-105 transition-transform animate-bounce">
+        <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
+    </button>
+
+</main>
+
+{% endblock %}

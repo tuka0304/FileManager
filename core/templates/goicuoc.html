@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Gói cước - FileBox{% endblock %}
+
+{% block content %}
+<main class="flex-1 overflow-y-auto p-8 scroll-smooth bg-gray-50/50">
+    <div class="max-w-6xl mx-auto flex flex-col h-full">
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="bg-green-100 text-green-700 p-4 rounded-lg mb-6">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Tiêu đề & Banner -->
+        <div class="mb-10">
+            <h1 class="text-3xl font-bold text-gray-900 tracking-tight mb-6">Trung tâm Gói cước</h1>
+            
+            <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl p-6 shadow-lg text-white flex flex-col md:flex-row items-center justify-between relative overflow-hidden">
+                <!-- Hiệu ứng ánh sáng nền -->
+                <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500 opacity-20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
+                
+                <div class="flex items-center gap-4 relative z-10">
+                    <div class="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
+                        <i data-lucide="crown" class="w-6 h-6 text-yellow-400"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-white mb-1">Tài khoản của bạn đang sử dụng gói {{ profile.get_plan_display }}.</h2>
+                        {% if profile.plan != 'basic' and profile.plan_expiry_date %}
+                        <p class="text-slate-300 text-sm flex items-center gap-2">
+                            <i data-lucide="calendar" class="w-4 h-4"></i> Ngày hết hạn: {{ profile.plan_expiry_date|date:"d/m/Y" }}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mt-4 md:mt-0 relative z-10">
+                    <button class="px-5 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl text-sm font-bold text-white transition-colors backdrop-blur-sm">
+                        Quản lý thanh toán
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lưới danh sách Gói cước -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center pb-8">
+            
+            <!-- Gói Basic -->
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 flex flex-col h-full hover:shadow-md transition-shadow">
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-500 mb-2">Basic</h3>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-extrabold text-gray-900">Miễn phí</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">Dành cho nhu cầu lưu trữ cơ bản.</p>
+                </div>
+                
+                <div class="flex-1">
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center gap-3 text-sm text-gray-700">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 bg-green-50 rounded-full p-1 flex-shrink-0"></i>
+                            Dung lượng lưu trữ 15GB
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-700">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 bg-green-50 rounded-full p-1 flex-shrink-0"></i>
+                            Tải lên tệp cơ bản
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-400">
+                            <i data-lucide="x" class="w-5 h-5 text-gray-400 bg-gray-100 rounded-full p-1 flex-shrink-0"></i>
+                            Không có Ký gửi an toàn
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-400">
+                            <i data-lucide="x" class="w-5 h-5 text-gray-400 bg-gray-100 rounded-full p-1 flex-shrink-0"></i>
+                            Không có Quét dọn thông minh
+                        </li>
+                    </ul>
+                </div>
+                {% if profile.plan == 'basic' %}
+                    <button disabled class="w-full bg-gray-200 text-gray-500 py-3.5 px-4 rounded-xl font-bold cursor-not-allowed">Đang sử dụng</button>
+                {% else %}
+                    <form method="POST" action="{% url 'change_user_plan' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan_type" value="basic">
+                        <button type="submit" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 py-3.5 px-4 rounded-xl font-bold transition-colors">
+                            Chuyển xuống
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+
+            <!-- Gói Premium (Được làm to và nổi bật hơn) -->
+            <div class="bg-white rounded-3xl p-8 shadow-xl ring-2 ring-blue-500 flex flex-col h-full transform md:-translate-y-4 relative z-10">
+                <!-- Nhãn dán -->
+                <div class="absolute top-0 right-8 -translate-y-1/2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-sm flex items-center gap-1.5 uppercase tracking-wider">
+                    <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i> Lựa chọn tốt nhất
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-blue-600 mb-2">Premium</h3>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-extrabold text-gray-900">99.000đ</span>
+                        <span class="text-gray-500 font-medium">/tháng</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">Trải nghiệm toàn bộ sức mạnh hệ thống.</p>
+                </div>
+                
+                <div class="flex-1">
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center gap-3 text-sm text-gray-900 font-medium">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 bg-green-50 rounded-full p-1 flex-shrink-0"></i>
+                            Dung lượng lưu trữ 1TB
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-700">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 bg-green-50 rounded-full p-1 flex-shrink-0"></i>
+                            Full tất cả tính năng FileBox
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-700">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 bg-green-50 rounded-full p-1 flex-shrink-0"></i>
+                            Có Quét dọn thông minh & Ký gửi
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-700">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 bg-green-50 rounded-full p-1 flex-shrink-0"></i>
+                            Đặc quyền Bảo mật mạng nâng cao
+                        </li>
+                    </ul>
+                </div>
+                {% if profile.plan == 'premium' %}
+                    <button disabled class="w-full py-3.5 px-4 bg-emerald-500 text-white rounded-xl font-bold cursor-not-allowed opacity-90 shadow-sm shadow-emerald-500/30 flex items-center justify-center gap-2">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i> Đang sử dụng
+                    </button>
+                {% else %}
+                    <a href="https://www.facebook.com/phideptrai0304/" target="_blank" class="w-full py-3.5 px-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold transition-colors shadow-sm shadow-emerald-500/30 flex items-center justify-center gap-2">
+                        Liên hệ Đăng ký Premium
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Gói Pro -->
+            <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 flex flex-col h-full hover:shadow-md transition-shadow">
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Pro</h3>
+                    <div class="flex items-baseline gap-1">
+                        <span class="text-4xl font-extrabold text-gray-900">49.000đ</span>
+                        <span class="text-gray-500 font-medium">/tháng</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2">Dành cho cá nhân có nhu cầu vừa phải.</p>
+                </div>
+                
+                <div class="flex-1">
+                    <ul class="space-y-4 mb-8">
+                        <li class="flex items-center gap-3 text-sm text-gray-700">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 bg-green-50 rounded-full p-1 flex-shrink-0"></i>
+                            Dung lượng lưu trữ 100GB
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-700">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 bg-green-50 rounded-full p-1 flex-shrink-0"></i>
+                            Có Ký gửi an toàn (Lên tới 5TB)
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-700">
+                            <i data-lucide="check" class="w-5 h-5 text-green-500 bg-green-50 rounded-full p-1 flex-shrink-0"></i>
+                            Có Quét dọn thông minh
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-400">
+                            <i data-lucide="x" class="w-5 h-5 text-gray-400 bg-gray-100 rounded-full p-1 flex-shrink-0"></i>
+                            Không có Bảo mật mạng
+                        </li>
+                    </ul>
+                </div>
+                {% if profile.plan == 'pro' %}
+                    <button disabled class="w-full py-3.5 px-4 bg-emerald-500 text-white rounded-xl font-bold cursor-not-allowed opacity-90 shadow-sm shadow-emerald-500/30 flex items-center justify-center gap-2">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i> Đang sử dụng
+                    </button>
+                {% elif profile.plan == 'premium' %}
+                    <form method="POST" action="{% url 'change_user_plan' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan_type" value="pro">
+                        <button type="submit" class="w-full py-3.5 px-4 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200 transition-colors">
+                            Chuyển xuống
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="https://www.facebook.com/phideptrai0304/" target="_blank" class="block text-center w-full py-3.5 px-4 bg-blue-900 text-white rounded-xl font-bold hover:bg-blue-800 transition-colors shadow-sm shadow-blue-900/20">
+                        Liên hệ Đăng ký Pro
+                    </a>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</main>
+{% endblock %}

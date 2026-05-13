@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Quản lý Tệp tin - FileBox{% endblock %}
+
+{% block content %}
+<main class="flex-1 overflow-y-auto p-8 scroll-smooth bg-gray-50/50">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col h-full min-h-[calc(100vh-10rem)]">
+        
+        <!-- Thanh công cụ thư mục -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50 gap-4">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i data-lucide="hard-drive" class="h-5 w-5 text-blue-600"></i> 
+                        Ổ đĩa:
+                    </h3>
+                    <form method="GET" action="" class="m-0">
+                        <select name="drive" class="text-sm border border-blue-200 rounded-lg px-2 py-1 text-blue-700 bg-blue-50 font-bold cursor-pointer hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-600 transition-colors" onchange="this.form.submit()">
+                            <option value="C:" {% if selected_drive == 'C:' %}selected{% endif %}>C:</option>
+                            <option value="D:" {% if selected_drive == 'D:' %}selected{% endif %}>D:</option>
+                            <option value="E:" {% if selected_drive == 'E:' %}selected{% endif %}>E:</option>
+                        </select>
+                    </form>
+                </div>
+                
+                <div class="flex items-center gap-2 mt-2">
+                    {% if not is_root %}
+                    <a href="?drive={{ selected_drive }}&path={{ parent_path }}&sort={{ sort_by }}" class="flex items-center gap-1 text-xs text-blue-600 hover:underline font-medium bg-blue-50 px-2 py-1 rounded">
+                        <i data-lucide="arrow-left" class="h-3 w-3"></i> Lên một cấp
+                    </a>
+                    <span class="text-gray-300">|</span>
+                    {% endif %}
+                    <span class="text-xs text-gray-600 font-mono bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">{{ current_path }}</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <form method="GET" action="" class="m-0 flex items-center gap-3">
+                    <input type="hidden" name="drive" value="{{ selected_drive }}">
+                    <input type="hidden" name="path" value="{{ current_path }}">
+                    
+                    {% if calc_size == 'false' %}
+                    <button type="submit" name="calc_size" value="true" class="flex items-center gap-2 text-sm bg-blue-50 text-blue-600 px-4 py-2 rounded-xl hover:bg-blue-100 font-bold transition-colors">
+                        <i data-lucide="refresh-cw" class="h-4 w-4"></i> Quét dung lượng thư mục con
+                    </button>
+                    {% endif %}
+
+                    <select name="sort" class="text-sm border border-gray-200 rounded-xl px-3 py-2 text-gray-700 bg-white cursor-pointer hover:bg-gray-50 focus:ring-2 focus:ring-blue-600 outline-none" onchange="this.form.submit()">
+                        <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Tên (A-Z)</option>
+                        <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Tên (Z-A)</option>
+                        <option value="size_desc" {% if sort_by == 'size_desc' %}selected{% endif %}>Dung lượng (Giảm dần)</option>
+                        <option value="size_asc" {% if sort_by == 'size_asc' %}selected{% endif %}>Dung lượng (Tăng dần)</option>
+                    </select>
+                </form>
+            </div>
+        </div>
+
+        <!-- Bảng danh sách File -->
+        <div class="overflow-x-auto flex-1 p-0">
+            <table class="w-full text-left border-collapse whitespace-nowrap">
+                <thead>
+                    <tr class="text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
+                        <th class="py-4 px-6">Tên Tệp / Thư mục</th>
+                        <th class="py-4 px-6 text-right">Kích thước</th>
+                        <th class="py-4 px-6 text-right">Sửa đổi lần cuối</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm divide-y divide-gray-50">
+                    {% for file in file_list %}
+                    <tr class="hover:bg-blue-50/50 transition-colors group">
+                        <td class="py-3 px-6">
+                            {% if file.is_dir %}
+                            <a href="?drive={{ selected_drive }}&path={{ file.full_path }}&sort={{ sort_by }}" class="flex items-center gap-3 group">
+                                <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                    <i data-lucide="folder" class="h-4 w-4 fill-current"></i>
+                                </div>
+                                <span class="font-semibold text-gray-700 group-hover:text-blue-700">{{ file.name }}</span>
+                            </a>
+                            {% else %}
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-gray-50 text-gray-400 flex items-center justify-center">
+                                    <i data-lucide="file" class="h-4 w-4"></i>
+                                </div>
+                                <span class="font-medium text-gray-600">{{ file.name }}</span>
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-6 text-right text-gray-500 font-medium">
+                            {% if file.is_dir and not file.is_scanned %}
+                                <span class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-500">Chưa quét</span>
+                            {% else %}
+                                {{ file.size }} MB
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-6 text-right text-gray-500">{{ file.date }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="py-12 text-center text-gray-500">
+                            <div class="flex flex-col items-center gap-3">
+                                <i data-lucide="folder-open" class="h-10 w-10 text-gray-300"></i>
+                                <p>Thư mục trống hoặc không có từ khóa bạn tìm.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+{% endblock %}

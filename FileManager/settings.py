@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -119,4 +119,17 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
+import os
+
+# Xử lý File tĩnh (CSS/JS)
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'core', 'static')]
+
+# Xử lý File Media (Ảnh đại diện người dùng tải lên)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Điều hướng Đăng nhập
+LOGIN_REDIRECT_URL = 'trang-chu' # Sau khi đăng nhập thành công sẽ về Trang chủ
+LOGIN_URL = 'login' # Đường dẫn tới trang đăng nhập
+LOGOUT_REDIRECT_URL = 'login'

@@ -1,0 +1,244 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FileBox{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
+</head>
+<body class="bg-slate-50 text-gray-900 antialiased overflow-hidden h-screen w-full flex">
+    
+    <!-- SIDEBAR BÊN TRÁI -->
+    <aside class="flex h-full w-64 flex-col bg-white border-r border-gray-100 shrink-0">
+        <!-- Logo -->
+        <div class="flex h-20 items-center px-6">
+            <a href="{% url 'trang-chu' %}" class="flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-6 w-6">
+                        <path d="M4 7V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M4 17v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3M2 12h20" />
+                    </svg>
+                </div>
+                <span class="text-xl font-bold text-gray-900">FileBox</span>
+            </a>
+        </div>
+        
+        <!-- Thanh điều hướng (Đã chèn chuẩn các link URL) -->
+        <nav class="flex-1 space-y-2 px-4 py-4">
+            <a href="{% url 'trang-chu' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
+                <i data-lucide="home" class="h-5 w-5"></i> Trang chủ
+            </a>
+            <a href="{% url 'tep-tin' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
+                <i data-lucide="file" class="h-5 w-5"></i> Tệp tin
+            </a>
+            <a href="{% url 'quet-don' %}" id="tour-menu-quetdon" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
+                <i data-lucide="trash-2" class="h-5 w-5"></i> Quét dọn
+            </a>
+            <a href="{% url 'chuyen-file' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
+                <i data-lucide="send" class="h-5 w-5"></i> Chuyển file
+            </a>
+            <a href="{% url 'ky-gui' %}" id="tour-menu-kygui" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
+                <i data-lucide="arrow-down-to-line" class="h-5 w-5"></i> Ký gửi
+            </a>
+            <a href="{% url 'bao-mat' %}" id="tour-menu-baomat" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
+                <i data-lucide="shield" class="h-5 w-5"></i> Bảo mật
+            </a>
+            <a href="{% url 'cai-dat' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-blue-50 hover:text-blue-600">
+                <i data-lucide="settings" class="h-5 w-5"></i> Cài đặt
+            </a>
+            {% if request.user.is_superuser %}
+            <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors text-gray-600 hover:bg-red-50 hover:text-red-600 mt-2 pt-3 border-t border-gray-100">
+                <i data-lucide="shield-alert" class="h-5 w-5"></i> Quản trị Hệ thống
+            </a>
+            {% endif %}
+        </nav>
+        
+        <!-- Khối thông tin User & Đăng xuất -->
+        <div class="p-4 border-t border-gray-100">
+            <a href="{% url 'goi_cuoc' %}" class="block rounded-xl bg-gray-50 p-3 mb-2 hover:bg-gray-100 transition-colors cursor-pointer">
+                <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-blue-100 overflow-hidden text-blue-600 flex items-center justify-center font-bold">
+                        {% if request.user.userprofile.avatar and request.user.userprofile.avatar.name != 'default_avatar.png' %}
+                            <img src="{{ request.user.userprofile.avatar.url }}" alt="Avatar" class="w-full h-full object-cover">
+                        {% else %}
+                            {{ request.user.username.0|upper }}
+                        {% endif %}
+                    </div>
+                    <div class="overflow-hidden">
+                        <p class="text-sm font-medium text-gray-900 truncate">{{ request.user.username }}</p>
+                        <p class="text-xs text-gray-500">Premium Plan</p>
+                    </div>
+                </div>
+            </a>
+            
+            <!-- Nút Đăng xuất an toàn bằng Form -->
+            <form action="{% url 'logout' %}" method="post" class="m-0">
+                {% csrf_token %}
+                <button type="submit" class="w-full flex items-center gap-3 rounded-xl px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+                    <i data-lucide="log-out" class="h-4 w-4"></i> Đăng xuất
+                </button>
+            </form>
+        </div>
+    </aside>
+    
+    <!-- VÙNG NỘI DUNG BÊN PHẢI -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden">
+        
+        <!-- HEADER TRÊN CÙNG -->
+        <header class="flex h-20 shrink-0 items-center justify-between border-b border-gray-100 bg-white px-8">
+            <!-- Luôn tìm kiếm và đẩy kết quả sang trang Tệp tin -->
+            <form method="GET" action="{% url 'tep-tin' %}" class="flex w-full max-w-md items-center gap-2 rounded-xl bg-gray-50 px-4 py-2.5 ring-1 ring-gray-200 focus-within:ring-2 focus-within:ring-blue-600 transition-shadow">
+                <input type="hidden" name="drive" value="{{ selected_drive|default:'C:' }}">
+                <button type="submit" class="hover:text-blue-600 transition-colors">
+                    <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
+                </button>
+                <input type="text" name="q" value="{{ search_query|default:'' }}" 
+                       placeholder="Tìm kiếm tệp, thư mục..." 
+                       class="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-500 outline-none" />
+            </form>
+
+            <div class="flex items-center gap-4">
+                <div class="relative group">
+                    <button class="relative rounded-xl p-2.5 text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors">
+                        {% if request.user.userprofile.unread_count > 0 %}
+                        <span class="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 ring-2 ring-white text-[10px] font-bold text-white">{{ request.user.userprofile.unread_count }}</span>
+                        {% endif %}
+                        <i data-lucide="bell" class="h-6 w-6"></i>
+                    </button>
+                    <div class="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-100 hidden group-hover:block z-50 overflow-hidden">
+                        <div class="p-4 border-b border-gray-100 bg-gray-50">
+                            <h3 class="font-bold text-gray-900 text-sm">Thông báo</h3>
+                        </div>
+                        <div class="max-h-[70vh] overflow-y-auto divide-y divide-gray-50">
+                            {% for noti in request.user.notification_set.all|slice:":5" %}
+                            <div class="p-4 hover:bg-blue-50/50 transition-colors cursor-pointer">
+                                <p class="text-sm text-gray-800 leading-snug">{{ noti.message }}</p>
+                                <p class="text-xs text-gray-400 mt-1.5"><i data-lucide="clock" class="w-3 h-3 inline-block mr-1 align-middle"></i>{{ noti.created_at|date:"H:i - d/m/Y" }}</p>
+                            </div>
+                            {% empty %}
+                            <div class="p-8 text-center text-gray-500">
+                                <p class="text-sm">Chưa có thông báo nào</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="p-3 border-t border-gray-100 bg-gray-50 text-center">
+                            <a href="{% url 'cai-dat' %}?tab=thong-bao" class="text-sm font-medium text-blue-600 hover:underline">Xem tất cả</a>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'cai-dat' %}?tab=tai-khoan" class="h-10 w-10 overflow-hidden rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold shadow-sm hover:bg-blue-200 transition-colors">
+                    {% if request.user.userprofile.avatar and request.user.userprofile.avatar.name != 'default_avatar.png' %}
+                        <img src="{{ request.user.userprofile.avatar.url }}" alt="Avatar" class="w-full h-full object-cover">
+                    {% else %}
+                        {{ request.user.username.0|upper }}
+                    {% endif %}
+                </a>
+            </div>
+        </header>
+        
+        <!-- ĐÂY LÀ NƠI CHỨA NỘI DUNG CÁC TRANG CON -->
+        {% block content %}
+        {% endblock %}
+        
+    </div>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>lucide.createIcons();</script>
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+    <script>
+let isJumpingPage = false;
+const driver = window.driver.js.driver;
+let driverObj = null;
+
+function startTutorialTour(stepIndex = 0) {
+    driverObj = driver({
+        showProgress: true,
+        animate: true,
+        nextBtnText: 'Tiếp theo ➔',
+        prevBtnText: '⬅ Quay lại',
+        doneBtnText: 'Hoàn tất',
+        allowClose: true,
+        onDestroyed: () => {
+            // Chỉ xóa bộ nhớ nếu người dùng tự bấm nút X tắt tour giữa chừng
+            if (!isJumpingPage) {
+                localStorage.removeItem('filebox_tour_step');
+            }
+        },
+        // ĐƯA QUYỀN ĐIỀU KHIỂN NÚT "TIẾP THEO" RA ĐÂY LÀM TỔNG CHỈ HUY
+        onNextClick: (element, step, { config, state }) => {
+            const currentStep = state.activeIndex;
+
+            if (currentStep === 1) {
+                // Đang ở bước 1 (Menu Quét dọn), chuẩn bị nhảy sang bước 2
+                isJumpingPage = true;
+                localStorage.setItem('filebox_tour_step', '2');
+                driverObj.destroy();
+                window.location.href = document.querySelector('#tour-menu-quetdon').href;
+            }
+            else if (currentStep === 3) {
+                // Đang ở bước 3 (Menu Ký gửi), chuẩn bị nhảy sang bước 4
+                isJumpingPage = true;
+                localStorage.setItem('filebox_tour_step', '4');
+                driverObj.destroy();
+                window.location.href = document.querySelector('#tour-menu-kygui').href;
+            }
+            else if (currentStep === 5) {
+                // Đang ở bước 5 (Menu Bảo mật), chuẩn bị nhảy sang bước 6
+                isJumpingPage = true;
+                localStorage.setItem('filebox_tour_step', '6');
+                driverObj.destroy();
+                window.location.href = document.querySelector('#tour-menu-baomat').href;
+            }
+            else if (currentStep === 6) {
+                // Bước cuối cùng (Bấm hoàn tất)
+                isJumpingPage = false;
+                localStorage.removeItem('filebox_tour_step');
+                driverObj.destroy();
+            }
+            else {
+                // Các bước bình thường (không nhảy trang) thì cứ đi tiếp
+                driverObj.moveNext();
+            }
+        },
+        steps: [
+            // 0: Trang chủ
+            { element: '#tour-quicknav', popover: { title: 'Lối tắt thần tốc ⚡', description: 'Nơi tập hợp các công cụ mạnh nhất. Bạn có thể Quét rác hoặc Tìm file trùng lặp ngay tại đây.', side: "bottom" }},
+            // 1: Nhảy sang Quét dọn
+            { element: '#tour-menu-quetdon', popover: { title: 'Khám phá khu dọn dẹp 🧹', description: 'Hãy cùng Phi đi sâu vào chi tiết nhé. Bấm Tiếp theo để hệ thống tự động đưa bạn sang trang Quét dọn.', side: "right" }},
+            // 2: Trang Quét dọn
+            { element: '#tour-scan-options', popover: { title: 'Chế độ quét chuyên sâu 🔍', description: 'Sử dụng thuật toán so sánh mã băm (Hash) để tìm file trùng lặp 100%, dọn dẹp an toàn tuyệt đối.', side: "bottom" }},
+            // 3: Nhảy sang Ký gửi
+            { element: '#tour-menu-kygui', popover: { title: 'Két sắt bảo mật 🔒', description: 'Cùng sang trang Ký gửi để xem cách mã hóa file cực xịn nào.', side: "right" }},
+            // 4: Trang Ký gửi
+            { element: '#vault-drop-zone', popover: { title: 'Cổng đẩy file 5TB ☁️', description: 'Kéo thả file vào đây. Dữ liệu sẽ được "bọc thép" AES-256 trước khi đẩy thẳng lên Drive.', side: "bottom" }},
+            // 5: Nhảy sang Bảo mật
+            { element: '#tour-menu-baomat', popover: { title: 'Trung tâm chỉ huy 🛡️', description: 'Cuối cùng, hãy kiểm tra trạng thái an toàn của toàn bộ hệ thống tại trang Bảo mật.', side: "right" }},
+            // 6: Trang Bảo mật
+            { element: '#tour-security-score', popover: { title: 'Điểm số uy tín 💯', description: 'Hệ thống tự chấm điểm dựa trên các lớp bảo mật bạn đã bật. Giữ ở mức 100/100 nhé! Chúc bạn dùng FileBox vui vẻ!', side: "bottom" }}
+        ]
+    });
+    driverObj.drive(stepIndex);
+}
+
+// Tự động gọi hướng dẫn viên dậy khi sang trang mới
+window.addEventListener('load', () => {
+    const savedStep = localStorage.getItem('filebox_tour_step');
+    if (savedStep) {
+        // Đợi 0.5s cho HTML của trang mới render xong 100% rồi mới hiển thị
+        setTimeout(() => {
+            startTutorialTour(parseInt(savedStep));
+        }, 500);
+    }
+});
+</script>
+</body>
+</html>

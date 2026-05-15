@@ -98,13 +98,44 @@
                     </form>
 
                     <div class="mt-5 flex items-center justify-between gap-3 text-sm">
-                        <a href="{% url 'password_reset' %}" class="font-medium text-blue-600 hover:text-blue-700 hover:underline">Quên mật khẩu?</a>
+                        <a href="{% url 'quen_mat_khau' %}" class="font-medium text-blue-600 hover:text-blue-700 hover:underline">Quên mật khẩu?</a>
                         <a href="{% url 'register' %}" class="font-medium text-gray-600 hover:text-blue-600 hover:underline">Tạo tài khoản</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <script>lucide.createIcons();</script>
+    <script>
+        lucide.createIcons();
+        document.addEventListener("DOMContentLoaded", function() {
+            const passwordInputs = document.querySelectorAll('input[type="password"]');
+            passwordInputs.forEach(input => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'relative w-full';
+                input.parentNode.insertBefore(wrapper, input);
+                wrapper.appendChild(input);
+                input.style.paddingRight = '2.5rem';
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors focus:outline-none';
+                btn.style.marginTop = '0.15rem'; 
+                btn.innerHTML = '<i data-lucide="eye" class="h-5 w-5"></i>';
+
+                btn.onclick = function() {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        btn.innerHTML = '<i data-lucide="eye-off" class="h-5 w-5"></i>';
+                    } else {
+                        input.type = 'password';
+                        btn.innerHTML = '<i data-lucide="eye" class="h-5 w-5"></i>';
+                    }
+                    lucide.createIcons();
+                };
+                wrapper.appendChild(btn);
+            });
+            lucide.createIcons();
+        });
+    </script>
 </body>
 </html>

@@ -5,6 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}FileBox{% endblock %}</title>
+
+    <meta name="description" content="FileBox - Nền tảng quản trị hệ thống và lưu trữ đám mây thông minh. Quản lý, dọn dẹp và bảo mật dữ liệu an toàn tuyệt đối.">
+    <meta name="keywords" content="FileBox, quản lý tệp, lưu trữ đám mây, dọn dẹp rác, bảo mật dữ liệu, ổ đĩa trực tuyến">
+    <meta name="author" content="Đỗ Hoàng Phi">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:title" content="FileBox - Tổng bộ Quản trị Hệ thống">
+    <meta property="og:description" content="Trải nghiệm không gian lưu trữ an toàn, Két sắt bảo mật và các công cụ dọn dẹp hệ thống mạnh mẽ cùng FileBox.">
+    <meta property="og:image" content="{% static 'logo.ico' %}">
+    <meta property="og:url" content="https://filemanager-mfrh.onrender.com">
+    <meta property="og:type" content="website">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FileBox - Quản lý tệp thông minh">
+    <meta name="twitter:description" content="Quản lý, dọn dẹp và bảo mật dữ liệu an toàn tuyệt đối với FileBox.">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,6 +29,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'logo.ico' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
 </head>
 <body class="bg-slate-50 text-gray-900 antialiased overflow-hidden h-screen w-full flex">
@@ -23,11 +39,7 @@
         <!-- Logo -->
         <div class="flex h-20 items-center px-6">
             <a href="{% url 'trang-chu' %}" class="flex items-center gap-3">
-                <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-white">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-6 w-6">
-                        <path d="M4 7V4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3M4 17v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3M2 12h20" />
-                    </svg>
-                </div>
+                <img src="{% static 'logo.ico' %}" alt="Logo FileBox" class="h-10 w-auto">
                 <span class="text-xl font-bold text-gray-900">FileBox</span>
             </a>
         </div>

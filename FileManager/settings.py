@@ -141,8 +141,17 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Xử lý File Media (Ảnh đại diện người dùng tải lên)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
+CSRF_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = False
 # Điều hướng Đăng nhập
 LOGIN_REDIRECT_URL = 'trang-chu' # Sau khi đăng nhập thành công sẽ về Trang chủ
 LOGIN_URL = 'login' # Đường dẫn tới trang đăng nhập
 LOGOUT_REDIRECT_URL = 'login'
+
+# Cho phép các request từ Desktop App (Localhost)
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost',
+    'http://127.0.0.1',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]

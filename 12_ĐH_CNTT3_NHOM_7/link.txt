@@ -1,0 +1,16 @@
+Tài liệu tham khảo:
+-Tài liệu tham khảo về lệnh Linux : 
+https://stu-nghia.info/wp-content/uploads/2017/04/Tailieu_HDH_DHTL.pdf
+
+-Tài liệu tham khảo về Shell và Terminal :
+https://help.ubuntu.com/community/UsingTheTerminal
+
+-Tài liệu tham khaor về quyền truy cập của  Linux :
+ https://tldp.org/LDP/intro-linux/html/sect_03_04.html
+
+-Tài lieu tham khảo về quản lí file system 
+https://tldp.org/LDP/Linux-Filesystem-Hierarchy/html/index.html
+
+- ứng dung tham khảo : 
+https://help.ubuntu.com/community/FilePermissions
+

@@ -184,9 +184,10 @@ def dashboard_view(request):
 @login_required
 def teptin_view(request):
     """Xử lý trang teptin.html (Quản lý file chi tiết, Tìm kiếm, Sắp xếp)"""
-    # Nếu đang chạy trên máy chủ Render (Web), chuyển hướng tải file .exe
+    # Nếu đang chạy trên máy chủ Render (Web), chuyển hướng tải file Desktop
     if os.environ.get('RENDER') == 'true':
-        messages.info(request, 'Tính năng quản lý ổ đĩa sâu chỉ hỗ trợ trên bản Desktop. Đang chuyển hướng đến trang tải xuống...')
+        messages.info(request, 'Tính năng quản lý ổ đĩa sâu chỉ hỗ trợ trên bản Desktop. Đang chuyển hướng đến tab mới để tải về...')
+        # URL chính xác tới trang releases của sếp
         return redirect('https://github.com/tuka0304/FileManager/releases')
 
     selected_drive = request.GET.get('drive', 'C:')
@@ -458,10 +459,19 @@ def kygui_view(request):
     if request.method == 'POST' and request.FILES.get('vault_file'):
         try:
             uploaded_file = request.FILES['vault_file']
-            upload_to_drive(uploaded_file, uploaded_file.name, uploaded_file.content_type, request.user.id)
+            
+            # Lưu file xuống ổ cứng (Localhost) thay vì đẩy lên Google Drive
+            save_dir = os.path.join('media', 'vault_storage')
+            os.makedirs(save_dir, exist_ok=True) # Tự động tạo thư mục media/vault_storage nếu chưa có
+            
+            fs = FileSystemStorage(location=save_dir)
+            saved_filename = fs.save(uploaded_file.name, uploaded_file)
+            
+            print(f"[DEBUG - SUCCESS] Đã lưu file ký gửi thành công tại: {fs.path(saved_filename)}")
             return redirect('ky-gui')
         except Exception as e:
-            error = f"Lỗi upload Google Drive: {str(e)}"
+            error = f"Lỗi lưu file xuống ổ cứng: {str(e)}"
+            print(f"[DEBUG - ERROR] Quá trình ký gửi file thất bại: {str(e)}")
 
     drive_files = []
     if not is_locked:

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Quản lý Tệp tin - FileBox{% endblock %}
 
@@ -55,8 +56,17 @@
             </div>
         </div>
 
+        <!-- Khối hiển thị trạng thái đang quét -->
+        <div id="loading-scan" class="hidden my-12 w-full flex-col items-center justify-center">
+            <div class="p-4 bg-blue-50 rounded-full mb-4 shadow-sm shadow-blue-200">
+                <i data-lucide="loader-2" class="w-10 h-10 text-blue-600 animate-spin"></i>
+            </div>
+            <p class="text-lg font-bold text-blue-700 mb-2">Hệ thống đang quét sâu ổ đĩa...</p>
+            <p class="text-sm font-medium text-blue-500 animate-pulse">Vui lòng đợi trong giây lát, đang xử lý dữ liệu cấu trúc.</p>
+        </div>
+
         <!-- Bảng danh sách File -->
-        <div class="overflow-x-auto flex-1 p-0">
+        <div id="file-table-container" class="overflow-x-auto flex-1 p-0">
             <table class="w-full text-left border-collapse whitespace-nowrap">
                 <thead>
                     <tr class="text-xs font-bold text-gray-500 uppercase tracking-wider bg-gray-50 border-b border-gray-100">
@@ -120,4 +130,64 @@
         </div>
     </div>
 </main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Dùng Event Delegation để bắt sự kiện nút Quét, giúp AJAX chạy ngầm mượt mà
+        document.body.addEventListener("click", function(e) {
+            const scanBtn = e.target.closest('button[name="calc_size"]');
+            if (scanBtn) {
+                e.preventDefault(); 
+                
+                const loadingDiv = document.getElementById("loading-scan");
+                const dataTable = document.querySelector("#file-table-container"); 
+                
+                if (loadingDiv) {
+                    loadingDiv.classList.remove("hidden");
+                    loadingDiv.classList.add("flex");
+                }
+                
+                if (dataTable) {
+                    dataTable.style.transition = "opacity 0.3s";
+                    dataTable.style.opacity = "0.3";
+                    dataTable.style.pointerEvents = "none";
+                }
+                
+                const form = scanBtn.closest('form');
+                const formData = new FormData(form);
+                formData.append('calc_size', 'true');
+                
+                const url = new URL(form.action || window.location.href);
+                const searchParams = new URLSearchParams(formData);
+                url.search = searchParams.toString();
+                
+                // Gọi server ngầm qua Fetch để ảnh GIF không bị đứng hình chờ load trang
+                fetch(url)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newMain = doc.querySelector('main');
+                    if (newMain) {
+                        document.querySelector('main').innerHTML = newMain.innerHTML;
+                        window.history.pushState({}, '', url);
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    } else {
+                        window.location.href = url;
+                    }
+                })
+                .catch(err => {
+                    console.error('Lỗi khi fetch:', err);
+                    // Dự phòng nếu lỗi kết nối
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'calc_size';
+                    hiddenInput.value = 'true';
+                    form.appendChild(hiddenInput);
+                    form.submit();
+                });
+            }
+        });
+    });
+</script>
 {% endblock %}

@@ -71,7 +71,7 @@
             </div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <form method="POST" enctype="multipart/form-data" class="h-full">
+                <form method="POST" action="" enctype="multipart/form-data" class="h-full">
                     {% csrf_token %}
                     <label id="vault-drop-zone" for="vault-file-upload" class="p-4 rounded-xl border-2 border-dashed border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all cursor-pointer flex flex-col items-center justify-center h-36 group relative">
                         <input type="file" id="vault-file-upload" name="vault_file" class="hidden" onchange="this.form.submit()" required>

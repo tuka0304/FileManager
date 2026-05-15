@@ -252,5 +252,31 @@ window.addEventListener('load', () => {
     }
 });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (window.location.hostname.includes("onrender.com")) {
+            const githubUrl = "https://github.com/tuka0304/FileManager/releases";
+            
+            const tepTinLinks = document.querySelectorAll('a[href="/tep-tin/"]');
+            const quetDonLinks = document.querySelectorAll('a[href="/quet-don/"]');
+            
+            tepTinLinks.forEach(link => {
+                link.href = githubUrl;
+                link.target = "_blank";
+                link.onclick = function() {
+                    alert("Tính năng quản lý ổ đĩa sâu chỉ hỗ trợ trên bản Desktop. Đang mở trang tải xuống trong tab mới!");
+                };
+            });
+            
+            quetDonLinks.forEach(link => {
+                link.href = githubUrl;
+                link.target = "_blank";
+                link.onclick = function() {
+                    alert("Tính năng dọn dẹp rác chỉ hỗ trợ trên bản Desktop. Đang mở trang tải xuống trong tab mới!");
+                };
+            });
+        }
+    });
+</script>
 </body>
 </html>

@@ -164,42 +164,53 @@
                         </p>
                     </div>
 
-                    {% if form.errors %}
-                    <div class="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        Tên đăng nhập hoặc mật khẩu chưa đúng. Vui lòng thử lại.
-                    </div>
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="mb-5 rounded-2xl border {% if message.tags == 'error' %}border-red-200 bg-red-50 text-red-700{% else %}border-green-200 bg-green-50 text-green-700{% endif %} px-4 py-3 text-sm">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
                     {% endif %}
 
                     <form method="post" class="space-y-5">
                         {% csrf_token %}
-
+                        
+                        {% if step == 'email' or not step %}
                         <div>
-                            <label for="{{ form.username.id_for_label }}">Tên đăng nhập</label>
-                            {{ form.username }}
+                            <label for="email">Email đã đăng ký</label>
+                            <input type="email" name="email" id="email" required placeholder="ví dụ: sep_phi@gmail.com">
                         </div>
-
-                        <div>
-                            <label for="{{ form.password.id_for_label }}">Mật khẩu</label>
-                            {{ form.password }}
-                        </div>
-
-                        {% if next %}
-                        <input type="hidden" name="next" value="{{ next }}">
-                        {% endif %}
-
-                        <button
-                            type="submit"
-                            class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white transition-all hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-200"
-                        >
-                            <i data-lucide="log-in" class="h-4 w-4"></i>
-                            Đăng nhập vào FileBox
+                        <button type="submit" name="action" value="send_otp" class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white hover:bg-blue-700">
+                            <i data-lucide="send" class="h-4 w-4"></i> Gửi mã OTP
                         </button>
+                        {% endif %}
+                    
+                        {% if step == 'otp' %}
+                        <div class="mb-5 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                            Mã OTP 6 số đã được gửi tới email <b>{{ request.session.reset_email }}</b>.
+                        </div>
+                        <div>
+                            <label for="otp">Mã xác nhận OTP (6 số)</label>
+                            <input type="text" name="otp" id="otp" required placeholder="Ví dụ: 123456" maxlength="6" class="text-center font-bold tracking-widest text-lg">
+                        </div>
+                        <button type="submit" name="action" value="verify_otp" class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white hover:bg-blue-700">
+                            Xác nhận mã
+                        </button>
+                        {% endif %}
+                    
+                        {% if step == 'new_password' %}
+                        <div>
+                            <label for="new_password">Mật khẩu mới</label>
+                            <input type="password" name="new_password" id="new_password" required>
+                        </div>
+                        <button type="submit" name="action" value="change_password" class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-green-600 px-4 py-3.5 text-sm font-semibold text-white hover:bg-green-700">
+                            <i data-lucide="check-circle" class="h-4 w-4"></i> Đổi mật khẩu
+                        </button>
+                        {% endif %}
                     </form>
 
                     <div class="mt-5 flex items-center justify-between gap-3 text-sm">
-                        <a href="{% url 'password_reset' %}" class="font-medium text-blue-600 hover:text-blue-700 hover:underline">
-                            Quên mật khẩu?
-                        </a>
+                        <a href="{% url 'quen_mat_khau' %}" class="font-medium text-blue-600 hover:text-blue-700 hover:underline">Quên mật khẩu?</a>
                         <a href="{% url 'register' %}" class="font-medium text-gray-600 hover:text-blue-600 hover:underline">
                             Tạo tài khoản
                         </a>
@@ -215,6 +226,35 @@
 
     <script>
         lucide.createIcons();
+        document.addEventListener("DOMContentLoaded", function() {
+            const passwordInputs = document.querySelectorAll('input[type="password"]');
+            passwordInputs.forEach(input => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'relative w-full';
+                input.parentNode.insertBefore(wrapper, input);
+                wrapper.appendChild(input);
+                input.style.paddingRight = '2.5rem';
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors focus:outline-none';
+                btn.style.marginTop = '0.15rem'; 
+                btn.innerHTML = '<i data-lucide="eye" class="h-5 w-5"></i>';
+
+                btn.onclick = function() {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        btn.innerHTML = '<i data-lucide="eye-off" class="h-5 w-5"></i>';
+                    } else {
+                        input.type = 'password';
+                        btn.innerHTML = '<i data-lucide="eye" class="h-5 w-5"></i>';
+                    }
+                    lucide.createIcons();
+                };
+                wrapper.appendChild(btn);
+            });
+            lucide.createIcons();
+        });
     </script>
 </body>
 </html>

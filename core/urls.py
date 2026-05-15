@@ -1,12 +1,15 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
+from django.views.generic import TemplateView
+
 
 urlpatterns = [
+    path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
     # Hệ thống tự xử lý Đăng nhập, Đăng xuất, Quên MK
     path('dang-nhap/', auth_views.LoginView.as_view(template_name='dangnhap.html'), name='login'),
     path('dang-xuat/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
-    path('quen-mat-khau/', auth_views.PasswordResetView.as_view(template_name='quenmk.html'), name='password_reset'),
+    path('quen-mat-khau/', views.quen_mat_khau, name='quen_mat_khau'),
     
     # Các trang hệ thống (Đã đồng bộ tên chuẩn xác)
     path('dang-ky/', views.register_view, name='register'),

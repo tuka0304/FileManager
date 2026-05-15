@@ -14,6 +14,10 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.contrib import messages
 import json
+import random
+from django.core.mail import send_mail
+from django.conf import settings
+from .forms import FormDangKyTuyChinh
 
 # Import các models của bạn (Đảm bảo trong models.py đã có những class này)
 from .models import UserProfile, TransferHistory, SecuredVault, QuickShare, ReceiveHistory, Notification, SecurityLog
@@ -81,7 +85,7 @@ def find_duplicate_files(root_path):
 def register_view(request):
     """Xử lý trang dangky.html"""
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = FormDangKyTuyChinh(request.POST or None)
         if form.is_valid():
             user = form.save()
             # Tạo profile mặc định cho người dùng mới
@@ -89,8 +93,56 @@ def register_view(request):
             login(request, user)
             return redirect('trang-chu')
     else:
-        form = UserCreationForm()
+        form = FormDangKyTuyChinh()
     return render(request, 'dangky.html', {'form': form})
+
+def quen_mat_khau(request):
+    step = request.session.get('reset_step', 'email')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'send_otp':
+            email = request.POST.get('email')
+            user = User.objects.filter(email=email).first()
+            if user:
+                otp = str(random.randint(100000, 999999))
+                request.session['reset_email'] = email
+                request.session['reset_otp'] = otp
+                request.session['reset_step'] = 'otp'
+                
+                send_mail(
+                    'Mã xác thực khôi phục mật khẩu FileBox',
+                    f'Chào bạn, mã OTP 6 số để đổi mật khẩu của bạn là: {otp}',
+                    settings.EMAIL_HOST_USER,
+                    [email],
+                    fail_silently=False,
+                )
+                messages.success(request, 'Mã OTP đã được gửi!')
+            else:
+                messages.error(request, 'Email chưa được đăng ký.')
+            # SỬA LẠI Ở ĐÂY
+            return redirect('quen_mat_khau')
+            
+        elif action == 'verify_otp':
+            if request.POST.get('otp') == request.session.get('reset_otp'):
+                request.session['reset_step'] = 'new_password'
+            else:
+                messages.error(request, 'Mã OTP không chính xác.')
+            # SỬA LẠI Ở ĐÂY
+            return redirect('quen_mat_khau')
+            
+        elif action == 'change_password':
+            user = User.objects.filter(email=request.session.get('reset_email')).first()
+            if user:
+                user.set_password(request.POST.get('new_password'))
+                user.save()
+                messages.success(request, 'Đổi mật khẩu thành công!')
+                for key in ['reset_step', 'reset_otp', 'reset_email']:
+                    if key in request.session: del request.session[key]
+                return redirect('login')
+
+    return render(request, 'quenmk.html', {'step': step})
 
 # ==========================================
 # 2. CÁC TRANG CHÍNH CỦA HỆ THỐNG FILEBOX
@@ -132,6 +184,11 @@ def dashboard_view(request):
 @login_required
 def teptin_view(request):
     """Xử lý trang teptin.html (Quản lý file chi tiết, Tìm kiếm, Sắp xếp)"""
+    # Nếu đang chạy trên máy chủ Render (Web), chuyển hướng tải file .exe
+    if os.environ.get('RENDER') == 'true':
+        messages.info(request, 'Tính năng quản lý ổ đĩa sâu chỉ hỗ trợ trên bản Desktop. Đang chuyển hướng đến trang tải xuống...')
+        return redirect('https://github.com/tuka0304/FileManager/releases')
+
     selected_drive = request.GET.get('drive', 'C:')
     sort_by = request.GET.get('sort', 'name_asc')
     calc_size = request.GET.get('calc_size', 'false')
@@ -223,6 +280,11 @@ def teptin_view(request):
 @login_required
 def quetdon_view(request):
     """Xử lý trang quetdon.html"""
+    # Nếu đang chạy trên máy chủ Render (Web), chuyển hướng tải file .exe
+    if os.environ.get('RENDER') == 'true':
+        messages.info(request, 'Tính năng dọn dẹp rác chỉ hỗ trợ trên bản Desktop. Đang chuyển hướng đến trang tải xuống...')
+        return redirect('https://github.com/tuka0304/FileManager/releases')
+
     action = request.GET.get('action', '')
     selected_drive = request.GET.get('drive', 'C:')
     root_path = f"{selected_drive}\\"

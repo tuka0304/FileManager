@@ -32,10 +32,10 @@
     <link rel="icon" type="image/x-icon" href="{% static 'logo.ico' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
 </head>
-<body class="bg-slate-50 text-gray-900 antialiased overflow-hidden h-screen w-full flex">
+<body class="antialiased overflow-hidden h-screen w-full flex">
     
     <!-- SIDEBAR BÊN TRÁI -->
-    <aside class="flex h-full w-64 flex-col bg-white border-r border-gray-100 shrink-0">
+   <aside class="sidebar flex h-full w-64 flex-col shrink-0">
         <!-- Logo -->
         <div class="flex h-20 items-center px-6">
             <a href="{% url 'trang-chu' %}" class="flex items-center gap-3">
@@ -106,7 +106,7 @@
     <div class="flex-1 flex flex-col h-full overflow-hidden">
         
         <!-- HEADER TRÊN CÙNG -->
-        <header class="flex h-20 shrink-0 items-center justify-between border-b border-gray-100 bg-white px-8">
+       <header class="header flex h-20 shrink-0 items-center justify-between px-8">
             <!-- Luôn tìm kiếm và đẩy kết quả sang trang Tệp tin -->
             <form method="GET" action="{% url 'tep-tin' %}" class="flex w-full max-w-md items-center gap-2 rounded-xl bg-gray-50 px-4 py-2.5 ring-1 ring-gray-200 focus-within:ring-2 focus-within:ring-blue-600 transition-shadow">
                 <input type="hidden" name="drive" value="{{ selected_drive|default:'C:' }}">
@@ -251,6 +251,124 @@ window.addEventListener('load', () => {
         }, 500);
     }
 });
+
+</script>
+{% if request.path == '/' %}
+<div class="support-chat-box">
+    <button class="chat-btn" onclick="toggleChatMenu()">💬 Hỗ trợ</button>
+    
+    <div class="chat-menu" id="chatMenu">
+        <a href="https://t.me/sang_maiz" target="_blank" class="chat-item telegram">
+            👨‍💻 Hỗ trợ qua Telegram
+        </a>
+        <a href="https://zalo.me/0774630014" target="_blank" class="chat-item discord">
+            👨‍💻 Hỗ trợ qua zalo
+        </a>
+    </div>
+</div>
+
+<style>
+.support-chat-box {
+    position: fixed;
+    bottom: 125px;       /* Tăng từ 20px lên 95px để đẩy nút Hỗ trợ lên trên quyển sách */
+    right: 20px;        /* Giữ nguyên 20px để nó thẳng hàng bên lề phải với quyển sách */
+    z-index: 9999;
+    font-family: Arial, sans-serif;
+}
+.chat-btn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+.chat-btn:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+.chat-menu {
+    display: none;
+    position: absolute;
+    bottom: 60px;
+    right: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    width: 220px;
+    overflow: hidden;
+}
+.chat-item {
+    display: block;
+    padding: 12px 15px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+.chat-item:hover {
+    background-color: #f5f5f5;
+}
+.chat-item.telegram { color: #0088cc; font-weight: bold; }
+.chat-item.discord { color: #5865F2; font-weight: bold; border-top: 1px solid #eee; }
+</style>
+
+<script>
+function toggleChatMenu() {
+    var menu = document.getElementById("chatMenu");
+    if (menu.style.display === "block") {
+        menu.style.display = "none";
+    } else {
+        menu.style.display = "block";
+    }
+}
+// Bấm ra ngoài rìa tự động ẩn menu
+window.onclick = function(event) {
+    if (!event.target.matches('.chat-btn')) {
+        var menu = document.getElementById("chatMenu");
+        if (menu && menu.style.display === "block") {
+            menu.style.display = "none";
+        }
+    }
+}
+</script>
+{% endif %}
+<script>
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const toggle = document.getElementById("themeToggle");
+
+    if(localStorage.getItem("theme") === "dark"){
+        document.body.classList.add("dark");
+
+        if(toggle){
+            toggle.checked = true;
+        }
+    }
+
+    if(toggle){
+
+        toggle.addEventListener("change", () => {
+
+            if(toggle.checked){
+                document.body.classList.add("dark");
+                localStorage.setItem("theme", "dark");
+            } else {
+                document.body.classList.remove("dark");
+                localStorage.setItem("theme", "light");
+            }
+
+        });
+
+    }
+
+});
+
 </script>
 </body>
 </html>

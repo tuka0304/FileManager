@@ -101,7 +101,15 @@
                                     <h4 class="font-bold text-gray-900">Quét sâu tự động</h4>
                                     <p class="text-sm text-gray-500">Tự động phân tích thư mục ẩn khi khởi động</p>
                                 </div>
-                                <input type="checkbox" name="auto_deep_scan" {% if profile.auto_deep_scan %}checked{% endif %} class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer" onchange="this.form.submit()">
+                              <input 
+    type="checkbox"
+    id="themeToggle"
+    name="auto_deep_scan"
+    {% if profile.auto_deep_scan %}checked{% endif %}
+    class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
+    onchange="this.form.submit()"
+>
+                                <input type="checkbox" id="darkmode-toggle" class="rounded text-purple-600 ...">
                             </div>
                         </form>
                     </div>

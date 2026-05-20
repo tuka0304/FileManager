@@ -83,26 +83,20 @@ EMAIL_HOST_PASSWORD = 'oomq ylrn tnof ljhz' # Mật khẩu ứng dụng của Go
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+# Database
 if 'DATABASE_URL' in os.environ:
-    # 1. KÍCH HOẠT KHI ĐẨY LÊN RENDER (Đám mây)
-    # Tự động lấy đường dẫn Database từ biến môi trường của Render
+    # 1. KÍCH HOẠT KHI ĐẨY LÊN RENDER
     DATABASES = {
         'default': dj_database_url.config(conn_max_age=600)
     }
 else:
-    # 2. KÍCH HOẠT KHI CHẠY LOCAL DƯỚI MÁY CÁ NHÂN (Desktop)
-    # Cấu hình PostgreSQL có sẵn trên máy sếp
+    # 2. KÍCH HOẠT CHO BẢN DESKTOP (Sử dụng chung DB trên Cloud luôn)
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'file_manager',      # Thay bằng tên DB sếp đã tạo trong pgAdmin
-            'USER': 'postgres',                # Tên user (thường mặc định là postgres)
-            'PASSWORD': '123',    # Mật khẩu lúc sếp cài PostgreSQL
-            'HOST': 'localhost',               # Chạy tại máy cá nhân
-            'PORT': '5432',                    # Cổng mặc định của Postgres
-        }
+        'default': dj_database_url.config(
+            default='postgresql://filebox_db_user:DZsNZRIGA9JQn442VWrfi6tYnVUANqyz@dpg-d825a69j2pic73b212n0-a/filebox_db',
+            conn_max_age=600
+        )
     }
-
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 

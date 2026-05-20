@@ -49,9 +49,9 @@ def list_drive_files(user_id):
     service = get_drive_service()
     results = service.files().list(
         # CODE MỚI CHUẨN XÁC
-        query = f"appProperties has {{ key='owner_id' and value='{user_id}' }} and trashed=false"
-        pageSize=10, 
-        fields="files(id, name, size, mimeType, createdTime)", 
+        query = "appProperties has { key='owner_id' and value='" + str(user_id) + "' } and trashed=false",
+        pageSize=10,
+        fields="files(id, name, size, mimeType, createdTime)",
         orderBy="createdTime desc"
     ).execute()
     return results.get('files', [])

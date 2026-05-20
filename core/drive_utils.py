@@ -48,7 +48,8 @@ def upload_to_drive(file_obj, file_name, mime_type, user_id):
 def list_drive_files(user_id):
     service = get_drive_service()
     results = service.files().list(
-        q=f"appProperties/owner_id='{user_id}' and trashed=false",
+        # CODE MỚI CHUẨN XÁC
+        query = f"appProperties has {{ key='owner_id' and value='{user_id}' }} and trashed=false"
         pageSize=10, 
         fields="files(id, name, size, mimeType, createdTime)", 
         orderBy="createdTime desc"

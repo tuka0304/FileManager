@@ -4,7 +4,8 @@ import datetime
 from datetime import timedelta
 from collections import defaultdict
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required as django_login_required
+from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
@@ -24,17 +25,41 @@ from .models import UserProfile, TransferHistory, SecuredVault, QuickShare, Rece
 
 from .drive_utils import upload_to_drive, list_drive_files, download_from_drive
 
+# Viết đè decorator login_required để tự động xử lý môi trường
+def login_required(function):
+    def wrapper(request, *args, **kwargs):
+        # Nếu đang ở môi trường Desktop (Không phải Render) và chưa đăng nhập
+        if os.environ.get('RENDER') != 'true' and not request.user.is_authenticated:
+            from django.contrib.auth.models import User
+            from django.contrib.auth import login
+            # Tự động tìm tài khoản admin hoặc tài khoản đầu tiên trong máy để đăng nhập ngầm
+            user = User.objects.filter(is_superuser=True).first() or User.objects.first()
+            if user:
+                login(request, user)
+        
+        # Gọi lại hàm login_required gốc của Django
+        return django_login_required(function)(request, *args, **kwargs)
+    return wrapper
+
 # ==========================================
 # HÀM BỔ TRỢ
 # ==========================================
 def get_folder_size(folder_path):
+    skip_dirs = ['Windows', 'Program Files', 'Program Files (x86)', '$Recycle.Bin', 'System Volume Information', 'ProgramData', 'AppData']
+    basename = os.path.basename(os.path.normpath(folder_path))
+    if basename in skip_dirs:
+        return 0
+        
     total_size = 0
     try:
-        for entry in os.scandir(folder_path):
-            if entry.is_file(follow_symlinks=False):
-                total_size += entry.stat(follow_symlinks=False).st_size
-            elif entry.is_dir(follow_symlinks=False):
-                total_size += get_folder_size(entry.path)
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                fp = os.path.join(root, file)
+                try:
+                    if not os.path.islink(fp):
+                        total_size += os.path.getsize(fp)
+                except Exception:
+                    pass
     except Exception:
         pass
     return total_size
@@ -335,6 +360,10 @@ def delete_scanned_item(request):
 @login_required
 def chuyenfile_view(request):
     """Xử lý trang chuyenfile.html"""
+    if os.environ.get('RENDER') != 'true':
+        messages.info(request, 'Tính năng Chuyển file đám mây hoạt động tốt nhất trên Web. Đang chuyển hướng...')
+        return redirect('https://filemanager-mfrh.onrender.com/chuyen-file/')
+        
     context = {}
     error = None
     preview_file = None
@@ -345,9 +374,16 @@ def chuyenfile_view(request):
             size_mb = round(uploaded_file.size / (1024 * 1024), 2)
             expiry_minutes = int(request.POST.get('expiry_time', 60))
 
+            file_id = upload_to_drive(
+                file_obj=uploaded_file.file, 
+                file_name=uploaded_file.name, 
+                mime_type=uploaded_file.content_type, 
+                user_id=request.user.id
+            )
+
             share = QuickShare.objects.create(
                 sender=request.user,
-                file=uploaded_file,
+                drive_file_id=file_id,
                 file_name=uploaded_file.name,
                 file_size=size_mb,
                 expires_at = timezone.now() + timedelta(minutes=expiry_minutes)
@@ -381,7 +417,10 @@ def chuyenfile_view(request):
                             user=quick_share.sender,
                             message=f"Tệp {quick_share.file_name} vừa được tải xuống bằng mã PIN {pin}."
                         )
-                        return FileResponse(quick_share.file.open('rb'), as_attachment=True, filename=quick_share.file_name)
+                        file_bytes, mime_type, file_name = download_from_drive(quick_share.drive_file_id)
+                        response = HttpResponse(file_bytes, content_type=mime_type)
+                        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+                        return response
                     
                     # Bước 1: Xem trước thông tin file
                     else:
@@ -453,6 +492,10 @@ def toggle_network_security(request):
 @login_required
 def kygui_view(request):
     """Xử lý trang kygui.html - Đẩy file lên Google Drive"""
+    if os.environ.get('RENDER') != 'true':
+        messages.info(request, 'Két sắt bảo mật Google Drive hoạt động tốt nhất trên Web. Đang chuyển hướng...')
+        return redirect('https://filemanager-mfrh.onrender.com/ky-gui/')
+        
     error = None
     is_locked = not request.session.get('vault_unlocked', False)
 
@@ -460,18 +503,18 @@ def kygui_view(request):
         try:
             uploaded_file = request.FILES['vault_file']
             
-            # Lưu file xuống ổ cứng (Localhost) thay vì đẩy lên Google Drive
-            save_dir = os.path.join('media', 'vault_storage')
-            os.makedirs(save_dir, exist_ok=True) # Tự động tạo thư mục media/vault_storage nếu chưa có
-            
-            fs = FileSystemStorage(location=save_dir)
-            saved_filename = fs.save(uploaded_file.name, uploaded_file)
-            
-            print(f"[DEBUG - SUCCESS] Đã lưu file ký gửi thành công tại: {fs.path(saved_filename)}")
+            # Đẩy thẳng lên Google Drive thay vì lưu Local
+            file_id = upload_to_drive(
+                file_obj=uploaded_file.file, 
+                file_name=uploaded_file.name, 
+                mime_type=uploaded_file.content_type, 
+                user_id=request.user.id
+            )
+            print(f"[DEBUG - SUCCESS] Da day file len Drive thanh cong voi ID: {file_id}")
             return redirect('ky-gui')
         except Exception as e:
-            error = f"Lỗi lưu file xuống ổ cứng: {str(e)}"
-            print(f"[DEBUG - ERROR] Quá trình ký gửi file thất bại: {str(e)}")
+            error = f"Lỗi đẩy file lên Google Drive: {str(e)}"
+            print(f"[DEBUG - ERROR] Qua trinh day file that bai: {str(e)}")
 
     drive_files = []
     if not is_locked:

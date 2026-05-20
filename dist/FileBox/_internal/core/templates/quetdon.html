@@ -1,0 +1,312 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Quét dọn hệ thống - FileBox{% endblock %}
+
+{% block content %}
+<!-- Chỉ chứa nội dung của phần Quét dọn -->
+<main class="flex-1 overflow-y-auto p-8 scroll-smooth bg-gray-50/50">
+    <div class="flex flex-col h-full min-h-[calc(100vh-10rem)]">
+        {% if action == 'duplicates' %}
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                    <i data-lucide="copy" class="w-6 h-6 text-blue-600"></i> Tìm file trùng lặp
+                </h1>
+                <p class="mt-1 text-gray-500">Quét trên ổ đĩa {{ selected_drive }}. Tìm thấy {{ duplicates|length }} tệp có bản sao.</p>
+                {% if action %}
+                <div class="mt-4 mb-2">
+                    <div class="relative max-w-md">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                        <input type="text" id="searchInput" placeholder="Tìm nhanh tên file, thư mục..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-600 outline-none transition-shadow text-sm">
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 flex-1 overflow-hidden flex flex-col">
+                <div class="overflow-x-auto p-0">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider border-b border-gray-100">
+                                <th class="py-4 px-6">Tên tệp & Kích thước</th>
+                                <th class="py-4 px-6">Đường dẫn</th>
+                                <th class="py-4 px-6 text-right">Thao tác</th>
+                            </tr>
+                        </thead>
+                        {% if duplicates %}
+                            {% for dup in duplicates %}
+                            <tbody class="duplicate-item divide-y divide-gray-100 text-sm">
+                                {% for path in dup.paths %}
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    {% if forloop.first %}
+                                    <td class="py-4 px-6 font-medium text-gray-900" rowspan="{{ dup.paths|length }}">
+                                        {{ dup.name }}<br>
+                                        <span class="text-xs text-gray-500">{{ dup.size }} MB</span>
+                                    </td>
+                                    {% endif %}
+                                    <td class="py-4 px-6 text-gray-600 font-mono text-xs">
+                                        {{ path }}
+                                        {% if forloop.first %}
+                                        <span class="ml-2 bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold">Bản gốc</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-4 px-6 text-right">
+                                        {% if not forloop.first %}
+                                        <button class="delete-btn text-red-600 hover:text-red-700 font-medium text-xs bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
+                                                data-path="{{ path }}" data-isfolder="false">
+                                            Xóa bản sao
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            {% endfor %}
+                        {% else %}
+                            <tbody class="text-sm">
+                                <tr>
+                                    <td colspan="3" class="py-12 text-center text-gray-500">
+                                        <i data-lucide="check-circle" class="w-12 h-12 mx-auto text-green-500 mb-3"></i>
+                                        <p class="text-lg font-medium text-gray-900">Tuyệt vời!</p>
+                                        <p>Không tìm thấy file trùng lặp nào trên ổ đĩa.</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+
+        {% elif action == 'empty_folders' %}
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+                    <i data-lucide="folder-open" class="w-6 h-6 text-blue-600"></i> Xóa thư mục trống
+                </h1>
+                <p class="mt-1 text-gray-500">Quét trên ổ đĩa {{ selected_drive }}. Tìm thấy {{ empty_folders|length }} thư mục trống.</p>
+                {% if action %}
+                <div class="mt-4 mb-2">
+                    <div class="relative max-w-md">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                        <input type="text" id="searchInput" placeholder="Tìm nhanh tên file, thư mục..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-blue-600 outline-none transition-shadow text-sm">
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 flex-1 overflow-hidden flex flex-col">
+                <div class="overflow-x-auto p-0">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider border-b border-gray-100">
+                                <th class="py-4 px-6">Đường dẫn thư mục trống</th>
+                                <th class="py-4 px-6 text-right">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100 text-sm">
+                            {% for folder in empty_folders %}
+                            <tr class="hover:bg-gray-50 transition-colors folder-item">
+                                <td class="py-4 px-6 text-gray-700 font-mono text-xs">{{ folder }}</td>
+                                <td class="py-4 px-6 text-right">
+                                    <button class="delete-btn text-red-600 hover:text-red-700 font-medium text-xs bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
+                                            data-path="{{ folder }}" data-isfolder="true">
+                                        Xóa thư mục
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="2" class="py-12 text-center text-gray-500">
+                                    <i data-lucide="check-circle" class="w-12 h-12 mx-auto text-green-500 mb-3"></i>
+                                    <p class="text-lg font-medium text-gray-900">Sạch sẽ!</p>
+                                    <p>Không có thư mục trống nào trên ổ đĩa.</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- GIAO DIỆN QUÉT DỌN CHUNG (Mặc định) -->
+            <div id="tour-scan-options" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Tính năng 1: Tìm file trùng lặp -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm ring-1 ring-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-4">
+                            <i data-lucide="copy" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Tìm file trùng lặp</h3>
+                        <p class="text-gray-500 mb-6 text-sm leading-relaxed">Quét toàn bộ ổ đĩa để phát hiện các tệp tin có nội dung và kích thước giống hệt nhau, giúp bạn giải phóng dung lượng lãng phí.</p>
+                    </div>
+                    <form method="GET" action="{% url 'quet-don' %}" class="flex gap-3 mt-auto" onsubmit="return showCleaningStatus(event, this)">
+                        <input type="hidden" name="action" value="duplicates">
+                        <select name="drive" class="border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 bg-gray-50 outline-none focus:ring-2 focus:ring-blue-600 font-medium cursor-pointer w-24">
+                            <option value="C:">Ổ C:</option>
+                            <option value="D:">Ổ D:</option>
+                            <option value="E:">Ổ E:</option>
+                        </select>
+                        <button type="submit" class="flex-1 bg-blue-600 text-white px-4 py-2.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-blue-600/20">
+                            Bắt đầu quét <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                </div>
+        
+                <!-- Tính năng 2: Xóa thư mục trống -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm ring-1 ring-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+                    <div>
+                        <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center text-orange-600 mb-4">
+                            <i data-lucide="folder-minus" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Dọn thư mục trống</h3>
+                        <p class="text-gray-500 mb-6 text-sm leading-relaxed">Rà soát và loại bỏ các thư mục không chứa bất kỳ tệp tin nào, giúp cây thư mục hệ thống gọn gàng và dễ quản lý hơn.</p>
+                    </div>
+                    <form method="GET" action="{% url 'quet-don' %}" class="flex gap-3 mt-auto" onsubmit="return showCleaningStatus(event, this)">
+                        <input type="hidden" name="action" value="empty_folders">
+                        <select name="drive" class="border border-gray-200 rounded-xl px-3 py-2.5 text-gray-700 bg-gray-50 outline-none focus:ring-2 focus:ring-orange-600 font-medium cursor-pointer w-24">
+                            <option value="C:">Ổ C:</option>
+                            <option value="D:">Ổ D:</option>
+                            <option value="E:">Ổ E:</option>
+                        </select>
+                        <button type="submit" class="flex-1 bg-orange-600 text-white px-4 py-2.5 rounded-xl font-semibold hover:bg-orange-700 transition-colors flex items-center justify-center gap-2 shadow-sm shadow-orange-600/20">
+                            Bắt đầu dọn <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="cleaning-status" class="hidden p-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl shadow-sm border border-blue-100 mt-6 flex flex-col items-center justify-center text-center">
+                <div class="bg-white p-4 rounded-full shadow-sm mb-4">
+                    <i data-lucide="loader-2" class="w-12 h-12 text-blue-600 animate-spin"></i>
+                </div>
+                <h3 class="text-xl font-bold text-blue-800 mb-2">Đang rà soát và tìm kiếm tệp rác...</h3>
+                <p class="text-sm text-blue-600 font-medium animate-pulse max-w-md mx-auto">
+                    Hệ thống đang sử dụng thuật toán quét sâu để kiểm tra ổ đĩa. Quá trình này có thể mất chút thời gian tùy thuộc vào dung lượng. Vui lòng không tải lại trang.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</main>
+
+{% block scripts %}
+<script>
+    function showCleaningStatus(event, formElement) {
+        // Ngăn chặn form gửi đi ngay lập tức
+        event.preventDefault();
+
+        // Hiện bảng trạng thái chứa ảnh GIF
+        document.getElementById('cleaning-status').classList.remove('hidden');
+        document.getElementById('tour-scan-options').classList.add('hidden');
+
+        // Sử dụng Fetch API để giữ cho trang không tải lại, giúp ảnh động GIF chạy mượt mà
+        const url = new URL(formElement.action || window.location.href);
+        const params = new URLSearchParams(new FormData(formElement));
+        url.search = params.toString();
+
+        fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newMain = doc.querySelector('main');
+            if (newMain) {
+                document.querySelector('main').innerHTML = newMain.innerHTML;
+                window.history.pushState({}, '', url);
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            } else {
+                window.location.href = url;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            formElement.submit(); // Fallback nếu xảy ra lỗi
+        });
+        
+        return false;
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // Hàm helper để lấy CSRF token từ cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // Sử dụng Event Delegation để gắn sự kiện xóa, giúp nút vẫn hoạt động sau khi AJAX tải lại nội dung
+        document.body.addEventListener('click', function(e) {
+            const button = e.target.closest('.delete-btn');
+            if (button) {
+                const path = button.getAttribute('data-path');
+                const isFolder = button.getAttribute('data-isfolder') === 'true';
+
+                if (confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn mục này không?\n\nĐường dẫn: ${path}`)) {
+                    fetch("{% url 'delete_scanned_item' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: JSON.stringify({
+                            path: path,
+                            isFolder: isFolder
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const row = button.closest('tr');
+                            if (row) {
+                                row.style.transition = 'opacity 0.3s ease-out';
+                                row.style.opacity = '0';
+                                setTimeout(() => row.remove(), 300);
+                            }
+                        } else {
+                            alert('Lỗi: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch Error:', error);
+                        alert('Đã xảy ra lỗi kết nối. Vui lòng kiểm tra console (F12).');
+                    });
+                }
+            }
+        });
+
+        // Bắt sự kiện input cho ô tìm kiếm bằng Event Delegation
+        document.body.addEventListener('input', function(e) {
+            if (e.target.id === 'searchInput') {
+                const keyword = e.target.value.toLowerCase();
+                
+                document.querySelectorAll('.duplicate-item').forEach(item => {
+                    const td = item.querySelector('td[rowspan]');
+                    if (td) {
+                        const text = td.textContent.toLowerCase();
+                        item.style.display = text.includes(keyword) ? '' : 'none';
+                    }
+                });
+
+                document.querySelectorAll('.folder-item').forEach(item => {
+                    const td = item.querySelector('td.font-mono');
+                    if (td) {
+                        const text = td.textContent.toLowerCase();
+                        item.style.display = text.includes(keyword) ? '' : 'none';
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}

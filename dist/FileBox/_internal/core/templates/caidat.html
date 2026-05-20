@@ -1,0 +1,214 @@
+{% extends 'base.html' %}
+
+{% block title %}Cài đặt - FileBox{% endblock %}
+
+{% block content %}
+<main class="flex-1 overflow-y-auto p-8 scroll-smooth bg-gray-50/50">
+    <div class="flex flex-col h-full min-h-[calc(100vh-10rem)] bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 overflow-hidden">
+        <div class="flex flex-col md:flex-row h-full flex-1">
+            
+            <!-- MENU CON BÊN TRÁI -->
+            <div class="w-full md:w-64 border-r border-gray-100 flex flex-col bg-slate-50/50">
+                <div class="p-6 pb-2 border-b border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-900">Cài đặt</h2>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 flex flex-col justify-between">
+                    <nav class="space-y-1">
+                        <a href="?tab=tai-khoan" class="tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {% if active_tab == 'tai-khoan' %}bg-blue-600 text-white shadow-sm shadow-blue-600/20{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                            <i data-lucide="user" class="w-5 h-5"></i> Tài khoản
+                        </a>
+                        <a href="?tab=cai-dat-chung" class="tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {% if active_tab == 'cai-dat-chung' %}bg-blue-600 text-white shadow-sm shadow-blue-600/20{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                            <i data-lucide="globe" class="w-5 h-5"></i> Cài đặt chung
+                        </a>
+                        <a href="?tab=giao-dien" class="tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {% if active_tab == 'giao-dien' %}bg-blue-600 text-white shadow-sm shadow-blue-600/20{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                            <i data-lucide="palette" class="w-5 h-5"></i> Giao diện
+                        </a>
+                        <a href="?tab=thong-bao" class="tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors {% if active_tab == 'thong-bao' %}bg-blue-600 text-white shadow-sm shadow-blue-600/20{% else %}text-gray-600 hover:bg-gray-100 hover:text-gray-900{% endif %}">
+                            <i data-lucide="bell" class="w-5 h-5"></i> Thông báo
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- NỘI DUNG CÁC TAB BÊN PHẢI -->
+            <div class="flex-1 p-8 overflow-y-auto bg-white">
+                <div class="max-w-2xl mx-auto">
+                    
+                    <!-- TAB 1: TÀI KHOẢN -->
+                    <div id="tab-tai-khoan" class="tab-content {% if active_tab == 'tai-khoan' %}block{% else %}hidden{% endif %} animate-fade-in">
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-1">Thông tin cá nhân</h3>
+                            <p class="text-gray-500">Quản lý chi tiết hồ sơ và tùy chọn liên hệ của bạn.</p>
+                        </div>
+
+                        <!-- Khối Avatar -->
+                        <div class="flex items-center gap-6 mb-8 p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div class="w-20 h-20 rounded-2xl bg-blue-100 text-blue-600 shadow-sm overflow-hidden flex items-center justify-center font-bold text-3xl flex-shrink-0 relative group cursor-pointer" onclick="document.getElementById('avatar-upload').click()">
+                                {% if profile.avatar and profile.avatar.name != 'default_avatar.png' %}
+                                    <img src="{{ profile.avatar.url }}" alt="Avatar" class="w-full h-full object-cover">
+                                {% else %}
+                                    {{ request.user.username.0|upper }}
+                                {% endif %}
+                                <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span class="text-white text-xs font-bold">Thay đổi</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 text-lg">Ảnh đại diện</h4>
+                                <p class="text-sm text-gray-500 mb-3">JPG, GIF hoặc PNG. Tối đa 5MB.</p>
+                                <div class="flex gap-3">
+                                    <label for="avatar-upload" class="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors shadow-sm cursor-pointer">Tải ảnh lên</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form thông tin -->
+                        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                            {% csrf_token %}
+                            <input type="hidden" name="tab" value="tai-khoan">
+                            <input type="file" id="avatar-upload" name="avatar" class="hidden" accept="image/*" onchange="this.form.submit()">
+                            
+                            <div class="grid grid-cols-1 gap-6">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-900 mb-2">Tên đăng nhập</label>
+                                    <input type="text" value="{{ request.user.username }}" readonly class="w-full px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-gray-500 shadow-sm cursor-not-allowed" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-bold text-gray-900 mb-2">Địa chỉ Email</label>
+                                <input type="email" name="email" value="{{ request.user.email }}" class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-sm" />
+                            </div>
+
+                            <div class="pt-6 border-t border-gray-100 flex justify-end gap-3">
+                                <button type="button" class="px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">Hủy</button>
+                                <button type="submit" class="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20">Lưu thay đổi</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- TAB 2: CÀI ĐẶT CHUNG -->
+                    <div id="tab-cai-dat-chung" class="tab-content {% if active_tab == 'cai-dat-chung' %}block{% else %}hidden{% endif %} animate-fade-in">
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-1">Cài đặt chung</h3>
+                            <p class="text-gray-500">Tùy chỉnh hệ thống phân tích dung lượng và dọn dẹp.</p>
+                        </div>
+                        <form method="POST" class="space-y-4">
+                            {% csrf_token %}
+                            <input type="hidden" name="tab" value="cai-dat-chung">
+                            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                                <div>
+                                    <h4 class="font-bold text-gray-900">Quét sâu tự động</h4>
+                                    <p class="text-sm text-gray-500">Tự động phân tích thư mục ẩn khi khởi động</p>
+                                </div>
+                                <input type="checkbox" name="auto_deep_scan" {% if profile.auto_deep_scan %}checked{% endif %} class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer" onchange="this.form.submit()">
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- TAB 3: GIAO DIỆN -->
+                    <div id="tab-giao-dien" class="tab-content {% if active_tab == 'giao-dien' %}block{% else %}hidden{% endif %} animate-fade-in">
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-1">Giao diện</h3>
+                            <p class="text-gray-500">Tùy chỉnh màu sắc hiển thị của FileBox.</p>
+                        </div>
+                        <form method="POST" class="space-y-4">
+                            {% csrf_token %}
+                            <input type="hidden" name="tab" value="giao-dien">
+                            <div class="flex items-center justify-between p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                                <div>
+                                    <h4 class="font-bold text-gray-900">Chế độ nền tối (Dark Mode)</h4>
+                                    <p class="text-sm text-gray-500">Giảm mỏi mắt khi làm việc ban đêm</p>
+                                </div>
+                                <input type="checkbox" name="dark_mode" {% if profile.dark_mode %}checked{% endif %} class="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 cursor-pointer" onchange="this.form.submit()">
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- TAB 4: THÔNG BÁO -->
+                    <div id="tab-thong-bao" class="tab-content {% if active_tab == 'thong-bao' %}block{% else %}hidden{% endif %} animate-fade-in">
+                        <div class="mb-8">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-1">Thông báo</h3>
+                            <p class="text-gray-500">Cài đặt cảnh báo bảo mật và dung lượng.</p>
+                        </div>
+                        <div class="space-y-2">
+                            {% for n in notifications %}
+                            <div class="flex items-start gap-4 p-4 rounded-xl border {% if not n.is_read %}bg-blue-50/50 border-blue-100{% else %}border-gray-100 bg-white{% endif %} transition-colors">
+                                <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center {% if not n.is_read %}bg-blue-100 text-blue-600{% else %}bg-gray-100 text-gray-500{% endif %}">
+                                    <i data-lucide="bell" class="w-5 h-5"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium {% if not n.is_read %}text-gray-900{% else %}text-gray-600{% endif %}">{{ n.message }}</p>
+                                    <p class="text-xs text-gray-400 mt-1"><i data-lucide="clock" class="w-3 h-3 inline-block mr-1 align-middle"></i>{{ n.created_at|timesince }} trước</p>
+                                </div>
+                                {% if not n.is_read %}
+                                <div class="w-2.5 h-2.5 rounded-full bg-blue-600 mt-2 shadow-sm shadow-blue-600/50"></div>
+                                {% endif %}
+                            </div>
+                            {% empty %}
+                            <div class="p-8 text-center border-2 border-dashed border-gray-200 rounded-xl text-gray-500">
+                                Chưa có thông báo nào mới.
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- ĐOẠN CODE JAVASCRIPT ĐỂ CHUYỂN TAB MƯỢT MÀ -->
+<!-- ĐOẠN CODE JAVASCRIPT ĐỂ CHUYỂN TAB MƯỢT MÀ (ĐÃ FIX LỖI LUCIDE) -->
+<script>
+    function switchTab(tabId) {
+        // 1. Ẩn tất cả các tab content
+        const contents = document.querySelectorAll('.tab-content');
+        contents.forEach(content => {
+            content.classList.remove('block');
+            content.classList.add('hidden');
+        });
+
+        // 2. Reset màu của tất cả các nút bên trái về màu xám
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => {
+            btn.className = 'tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-gray-600 hover:bg-gray-100 hover:text-gray-900';
+            
+            // Tìm thẻ <svg> (do Lucide đã convert) để đổi màu icon
+            const icon = btn.querySelector('svg');
+            if (icon) {
+                icon.classList.remove('text-white');
+                icon.classList.add('text-gray-400');
+            }
+        });
+
+        // 3. Hiển thị tab được chọn
+        const targetTab = document.getElementById('tab-' + tabId);
+        targetTab.classList.remove('hidden');
+        targetTab.classList.add('block');
+
+        // 4. Đổi màu nút được chọn thành màu xanh
+        const activeBtn = document.getElementById('btn-' + tabId);
+        activeBtn.className = 'tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors bg-blue-600 text-white shadow-sm shadow-blue-600/20';
+        
+        // Đổi màu icon của tab đang active thành trắng
+        const activeIcon = activeBtn.querySelector('svg');
+        if (activeIcon) {
+            activeIcon.classList.remove('text-gray-400');
+            activeIcon.classList.add('text-white');
+        }
+    }
+</script>
+
+<style>
+    /* Hiệu ứng mờ dần khi chuyển tab */
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(5px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}

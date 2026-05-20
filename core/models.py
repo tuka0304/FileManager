@@ -83,7 +83,7 @@ class SecuredVault(models.Model):
 # 4. Chia sẻ tệp nhanh bằng mã PIN
 class QuickShare(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
-    file = models.FileField(upload_to='quick_shares/')
+    drive_file_id = models.CharField(max_length=150)
     file_name = models.CharField(max_length=255)
     file_size = models.FloatField()
     pin_code = models.CharField(max_length=10, unique=True, blank=True)

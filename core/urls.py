@@ -2,6 +2,8 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
 from django.views.generic import TemplateView
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 urlpatterns = [
@@ -33,3 +35,6 @@ urlpatterns = [
     path('admin-panel/downgrade/<int:user_id>/', views.downgrade_basic, name='admin_downgrade'),
     path('admin-panel/lock/<int:user_id>/', views.toggle_lock_user, name='admin_lock'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

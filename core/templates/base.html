@@ -370,5 +370,28 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if (window.location.hostname.includes("onrender.com")) {
+            const githubUrl = "https://github.com/tuka0304/FileManager/releases";
+            
+            // Tìm tất cả các link Tệp tin và Quét dọn
+            const tepTinLinks = document.querySelectorAll('a[href="/tep-tin/"]');
+            const quetDonLinks = document.querySelectorAll('a[href="/quet-don/"]');
+            
+            const handleDesktopRedirect = (link, featureName) => {
+                link.href = githubUrl;
+                link.target = "_blank"; // Mở tab mới
+                link.onclick = function() {
+                    alert(`Tính năng ${featureName} chỉ hỗ trợ trên bản Desktop. Đang mở trang tải xuống trong tab mới!`);
+                };
+            }
+
+            // Ép cả 2 mục Tệp tin và Quét dọn mở tab mới
+            tepTinLinks.forEach(link => handleDesktopRedirect(link, "Quản lý ổ đĩa sâu"));
+            quetDonLinks.forEach(link => handleDesktopRedirect(link, "Dọn dẹp rác"));
+        }
+    });
+</script>
 </body>
 </html>

@@ -47,9 +47,12 @@ def upload_to_drive(file_obj, file_name, mime_type, user_id):
 
 def list_drive_files(user_id):
     service = get_drive_service()
+    
+    # Đưa chuỗi tìm kiếm ra 1 biến riêng cho an toàn
+    q_string = "appProperties has { key='owner_id' and value='" + str(user_id) + "' } and trashed=false"
+    
     results = service.files().list(
-        # CODE MỚI CHUẨN XÁC
-        query = "appProperties has { key='owner_id' and value='" + str(user_id) + "' } and trashed=false",
+        q=q_string,  # ĐÃ SỬA THÀNH CHỮ 'q=' CHUẨN API GOOGLE
         pageSize=10,
         fields="files(id, name, size, mimeType, createdTime)",
         orderBy="createdTime desc"

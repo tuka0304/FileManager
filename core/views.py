@@ -511,6 +511,11 @@ def kygui_view(request):
                 user_id=request.user.id
             )
             print(f"[DEBUG - SUCCESS] Da day file len Drive thanh cong voi ID: {file_id}")
+            
+            # THÊM ĐỘ TRỄ 3 GIÂY ĐỂ GOOGLE DRIVE KỊP XỬ LÝ FILE MỚI
+            import time
+            time.sleep(3)
+            
             return redirect('ky-gui')
         except Exception as e:
             error = f"Lỗi đẩy file lên Google Drive: {str(e)}"
@@ -545,7 +550,6 @@ def kygui_view(request):
             print(f"[DEBUG - LỖI LOAD FILE] {error}")
 
     return render(request, 'kygui.html', {'drive_files': drive_files, 'error': error, 'is_locked': is_locked})
-
 @login_required
 def unlock_vault(request):
     if request.method == 'POST':

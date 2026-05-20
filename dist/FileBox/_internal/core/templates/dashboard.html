@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Trang chủ - FileBox{% endblock %}
+
+{% block content %}
+<main class="flex-1 overflow-y-auto p-8 scroll-smooth">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Chào buổi sáng, {{ request.user.username }}!</h1>
+        <p class="mt-1 text-gray-500">Đây là tổng quan hệ thống tệp của bạn hôm nay.</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <!-- Biểu đồ thống kê ổ đĩa -->
+        <div id="tour-storage" class="flex h-full w-full flex-col items-center justify-between rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+            <div class="flex w-full items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900">Tổng quan dung lượng</h3>
+                <!-- Dropdown chọn ổ đĩa (Tự động submit khi chọn) -->
+                <form method="GET" action="" class="m-0">
+                    <select name="drive" class="text-sm border border-gray-200 rounded-lg px-2 py-1.5 text-gray-700 bg-gray-50 hover:bg-gray-100 cursor-pointer font-medium" onchange="this.form.submit()">
+                        <option value="C:" {% if selected_drive == 'C:' %}selected{% endif %}>Ổ đĩa C:</option>
+                        <option value="D:" {% if selected_drive == 'D:' %}selected{% endif %}>Ổ đĩa D:</option>
+                        <option value="E:" {% if selected_drive == 'E:' %}selected{% endif %}>Ổ đĩa E:</option>
+                    </select>
+                </form>
+            </div>
+            
+            <div class="relative flex-1 w-full min-h-[160px] flex items-center justify-center">
+                <div class="relative w-40 h-40">
+                    <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#EFF6FF" stroke-width="12"></circle>
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="#2563EB" stroke-width="12" stroke-dasharray="251.2" style="stroke-dashoffset: calc(251.2 - (251.2 * {{ phan_tram|default:0 }} / 100)); stroke-linecap: round; transition: all 1s ease-out;"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                        <span class="text-2xl font-bold text-gray-900">{{ da_su_dung }}</span>
+                        <span class="text-xs text-gray-500">/ {{ tong_dung_luong }} GB</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lối tắt nhanh -->
+        <div class="flex flex-col gap-6">
+            <div id="tour-quicknav" class="flex flex-col justify-between items-start w-full bg-white p-6 rounded-2xl shadow-sm ring-1 ring-gray-100">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Điều hướng nhanh</h3>
+                <div class="flex w-full gap-4">
+                    <a href="{% url 'tep-tin' %}" class="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl p-4 transition-all bg-blue-600 text-white hover:bg-blue-700 shadow-sm shadow-blue-600/20">
+                        <i data-lucide="folder-search" class="h-6 w-6"></i>
+                        <span class="text-sm font-medium">Quét chi tiết tệp</span>
+                    </a>
+                    <a href="{% url 'quet-don' %}?action=duplicates&drive={{ selected_drive|default:'C:' }}" class="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl p-4 transition-all bg-white text-gray-700 hover:bg-gray-50 ring-1 ring-gray-200">
+                        <i data-lucide="copy" class="h-6 w-6"></i>
+                        <span class="text-sm font-medium">Tìm file trùng lặp</span>
+                    </a>
+                    <a href="{% url 'quet-don' %}?action=empty_folders&drive={{ selected_drive|default:'C:' }}" class="flex flex-1 flex-col items-center justify-center gap-3 rounded-xl p-4 transition-all bg-white text-gray-700 hover:bg-gray-50 ring-1 ring-gray-200">
+                        <i data-lucide="folder-x" class="h-6 w-6"></i>
+                        <span class="text-sm font-medium">Xóa thư mục trống</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hoạt động hệ thống gần đây -->
+    <div id="tour-activity" class="mt-6 bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 flex-1 flex flex-col">
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+            <h3 class="font-bold text-gray-900 text-lg">Hoạt động hệ thống gần đây</h3>
+        </div>
+        <div class="p-4 space-y-1">
+            {% for activity in recent_activities %}
+            <div class="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+                {% if activity.log_type == 'warning' %}
+                <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-orange-50 text-orange-500">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                </div>
+                {% elif activity.log_type == 'success' %}
+                <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-emerald-50 text-emerald-500">
+                    <i data-lucide="lock" class="w-5 h-5"></i>
+                </div>
+                {% else %}
+                <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-blue-50 text-blue-500">
+                    <i data-lucide="info" class="w-5 h-5"></i>
+                </div>
+                {% endif %}
+                
+                <div class="flex-1">
+                    <h4 class="font-bold text-gray-900">{{ activity.action }}</h4>
+                    <p class="text-sm text-gray-500">{{ activity.details }}</p>
+                </div>
+                <span class="text-xs font-medium text-gray-400 whitespace-nowrap">{{ activity.created_at|timesince }} trước</span>
+            </div>
+            {% empty %}
+            <div class="p-4 text-center text-gray-500 text-sm">
+                Hệ thống chưa ghi nhận hoạt động nào.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Nút Bí kíp Tân thủ -->
+    <button id="btn-tutorial" onclick="startTutorialTour()" class="fixed bottom-8 right-8 z-40 w-16 h-16 rounded-full bg-gradient-to-r from-orange-400 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-500/40 hover:scale-105 transition-transform animate-bounce">
+        <i data-lucide="book-open" class="w-6 h-6 text-white"></i>
+    </button>
+
+</main>
+
+{% endblock %}

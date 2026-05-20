@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng ký - FileBox</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Ép kiểu cho các ô input sinh ra từ Django */
+        input[type="text"], input[type="password"], input[type="email"] {
+            width: 100%; border-radius: 0.875rem; border: 1px solid rgb(226 232 240);
+            background: rgb(248 250 252); padding: 0.875rem 1rem; font-size: 0.95rem;
+            color: rgb(15 23 42); outline: none; transition: all 0.2s ease;
+            margin-top: 0.35rem;
+        }
+        input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus {
+            border-color: rgb(37 99 235); background: white;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.10);
+        }
+        
+        /* Làm đẹp tiêu đề thẻ label */
+        label { display: block; margin-top: 1.25rem; font-size: 0.875rem; font-weight: 600; color: rgb(51 65 85); }
+        
+        /* Thuần hóa mấy cái ghi chú (helptext) và gạch đầu dòng của Django */
+        .helptext { display: block; font-size: 0.75rem; color: rgb(100 116 139); margin-top: 0.35rem; }
+        ul { list-style-type: none; padding-left: 0; margin-top: 0.5rem; }
+        ul li { font-size: 0.75rem; color: rgb(100 116 139); position: relative; padding-left: 1rem; margin-bottom: 0.25rem;}
+        ul li::before { content: "•"; position: absolute; left: 0; color: rgb(37 99 235); font-weight: bold;}
+        
+        /* Hộp thoại báo lỗi */
+        .errorlist {
+            margin: 0.5rem 0 1rem 0; padding: 0; border-radius: 0.875rem;
+            border: 1px solid rgb(254 202 202); background: rgb(254 242 242);
+            color: rgb(185 28 28); overflow: hidden;
+        }
+        .errorlist li::before { content: "⚠"; color: rgb(185 28 28); margin-right: 0.25rem;}
+        .errorlist li { padding: 0.5rem 1rem; font-size: 0.875rem; color: rgb(185 28 28); margin-bottom: 0;}
+        
+        form p { margin-bottom: 0; }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-gray-900 antialiased">
+    <div class="min-h-screen grid lg:grid-cols-2">
+        <!-- Panel Trái (Banner) -->
+        <div class="hidden lg:flex relative overflow-hidden border-r border-gray-100 bg-white">
+            <div class="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-slate-100"></div>
+            <div class="relative z-10 flex w-full flex-col justify-between p-10 xl:p-14">
+                <div>
+                    <a href="/" class="inline-flex items-center gap-3">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm shadow-blue-600/20">
+                            <i data-lucide="box" class="h-6 w-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-xl font-bold tracking-tight text-gray-900">FileBox</p>
+                            <p class="text-sm text-gray-500">Quản lý tệp thông minh</p>
+                        </div>
+                    </a>
+                </div>
+                <div class="max-w-xl">
+                    <h1 class="text-4xl font-bold tracking-tight text-gray-900 xl:text-5xl">Gia nhập FileBox</h1>
+                    <p class="mt-4 max-w-lg text-base leading-7 text-gray-600">Tạo tài khoản ngay hôm nay để trải nghiệm không gian lưu trữ an toàn, Két sắt bảo mật và các công cụ dọn dẹp hệ thống mạnh mẽ.</p>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl bg-gray-50 p-4 ring-1 ring-gray-100 max-w-sm">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-tr from-blue-500 to-blue-600 text-sm font-bold text-white">F</div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-900">Bảo mật cấp độ cao</p>
+                        <p class="text-xs text-gray-500">Mã hóa an toàn với Google Drive 5TB</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panel Phải (Form Đăng ký) -->
+        <div class="flex items-center justify-center p-6 sm:p-8 lg:p-12 overflow-y-auto">
+            <div class="w-full max-w-md">
+                <div class="rounded-3xl bg-white p-7 shadow-sm ring-1 ring-gray-100 sm:p-8">
+                    <div class="mb-6">
+                        <h2 class="text-2xl font-bold tracking-tight text-gray-900">Tạo tài khoản mới</h2>
+                        <p class="mt-2 text-sm leading-6 text-gray-500">Điền thông tin bên dưới để bắt đầu[cite: 1].</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Toàn bộ field của Django được render tự động ở đây -->
+                        {{ form.as_p }}
+
+                        <button type="submit" class="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-4 py-3.5 text-sm font-semibold text-white transition-all hover:bg-blue-700 shadow-sm shadow-blue-600/20">
+                            <i data-lucide="user-plus" class="h-4 w-4"></i> Đăng ký tài khoản
+                        </button>
+                    </form>
+
+                    <div class="mt-6 pt-6 border-t border-gray-100 flex items-center justify-center gap-2 text-sm">
+                        <span class="text-gray-500">Đã có tài khoản?</span>
+                        <a href="{% url 'login' %}" class="font-medium text-blue-600 hover:text-blue-700 hover:underline">Quay lại đăng nhập</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        lucide.createIcons();
+        document.addEventListener("DOMContentLoaded", function() {
+            const passwordInputs = document.querySelectorAll('input[type="password"]');
+            passwordInputs.forEach(input => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'relative w-full';
+                input.parentNode.insertBefore(wrapper, input);
+                wrapper.appendChild(input);
+                input.style.paddingRight = '2.5rem';
+    
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors focus:outline-none';
+                btn.style.marginTop = '0.15rem'; 
+                btn.innerHTML = '<i data-lucide="eye" class="h-5 w-5"></i>';
+    
+                btn.onclick = function() {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        btn.innerHTML = '<i data-lucide="eye-off" class="h-5 w-5"></i>';
+                    } else {
+                        input.type = 'password';
+                        btn.innerHTML = '<i data-lucide="eye" class="h-5 w-5"></i>';
+                    }
+                    lucide.createIcons();
+                };
+                wrapper.appendChild(btn);
+            });
+            lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Bảo mật - FileBox{% endblock %}
+
+{% block content %}
+    <!-- Dán toàn bộ thẻ <main> từ [source: 8] vào đây -->
+<main class="flex-1 overflow-y-auto p-8 scroll-smooth">
+    <div class="flex flex-col h-full min-h-[calc(100vh-10rem)]">
+        <div class="mb-6 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Trung tâm Bảo mật</h1>
+                <p class="mt-1 text-gray-500">Bảo vệ tài khoản và tệp tin của bạn khỏi các mối đe dọa.</p>
+            </div>
+            <button id="scan-btn" class="flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-100 transition-colors border border-blue-200">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Quét toàn bộ
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- Overall Status -->
+            <div id="tour-security-score" class="bg-emerald-500 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-6 shadow-sm ring-1 ring-emerald-500/20 text-white flex flex-col items-center justify-center text-center relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl"></div>
+                <div class="absolute bottom-0 left-0 w-40 h-40 bg-emerald-300 opacity-20 rounded-full blur-xl"></div>
+                
+                <div class="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mb-4 ring-8 ring-white/10 relative z-10">
+                    <i data-lucide="shield-check" class="w-10 h-10 text-white"></i>
+                </div>
+                <h2 class="text-2xl font-bold mb-2">Đang được bảo vệ</h2>
+                <p class="text-emerald-50 mb-4">Hệ thống an toàn. Không phát hiện mối đe dọa nào trong 30 ngày qua.</p>
+                <span class="bg-white/20 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">Điểm số: 100/100</span>
+            </div>
+
+            <!-- Security Modules -->
+            <div class="lg:col-span-2 grid grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm ring-1 ring-gray-100 hover:shadow-md transition-shadow flex flex-col justify-between cursor-pointer border-t-4 border-t-emerald-500">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
+                            <i data-lucide="activity" class="w-5 h-5"></i>
+                        </div>
+                        <span class="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                            <i data-lucide="check" class="w-3 h-3"></i> Đang chạy
+                        </span>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900 mb-1">Bảo vệ thời gian thực</h3>
+                        <p class="text-sm text-gray-500">Tự động quét tệp mới được tải lên và theo dõi hành vi đáng ngờ.</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-5 rounded-2xl shadow-sm ring-1 ring-gray-100 hover:shadow-md transition-shadow flex flex-col justify-between cursor-pointer border-t-4 border-t-blue-500">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
+                            <i data-lucide="globe" class="w-5 h-5"></i>
+                        </div>
+                        <button id="network-toggle" class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors {% if network_security_enabled %}bg-blue-600{% else %}bg-gray-200{% endif %}">
+                            <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {% if network_security_enabled %}translate-x-6{% else %}translate-x-1{% endif %}"></span>
+                        </button>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900 mb-1">Bảo mật mạng</h3>
+                        <p class="text-sm text-gray-500">Mã hóa kết nối truyền dữ liệu, chặn tracker và bot độc hại.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Log -->
+        <div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-100 flex-1 flex flex-col">
+            <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-bold text-gray-900 text-lg">Hoạt động bảo mật gần đây</h3>
+                <button class="text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors">Bộ lọc</button>
+            </div>
+            <div class="p-4 space-y-1">
+                {% for log in security_logs %}
+                <div class="flex items-start gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
+                    {% if log.log_type == 'warning' %}
+                    <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-orange-50 text-orange-500">
+                        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    </div>
+                    {% elif log.log_type == 'success' %}
+                    <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-emerald-50 text-emerald-500">
+                        <i data-lucide="lock" class="w-5 h-5"></i>
+                    </div>
+                    {% else %}
+                    <div class="mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-sm bg-blue-50 text-blue-500">
+                        <i data-lucide="info" class="w-5 h-5"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="flex-1">
+                        <h4 class="font-bold text-gray-900">{{ log.action }}</h4>
+                        <p class="text-sm text-gray-500">{{ log.details }}</p>
+                    </div>
+                    <span class="text-xs font-medium text-gray-400 whitespace-nowrap">{{ log.created_at|timesince }} trước</span>
+                </div>
+                {% empty %}
+                <div class="p-4 text-center text-gray-500 text-sm">
+                    Chưa có hoạt động bảo mật nào gần đây.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</main>
+
+{% csrf_token %}
+<script>
+    document.getElementById('scan-btn').addEventListener('click', function() {
+        const btn = this;
+        const originalHtml = btn.innerHTML;
+        
+        // Đổi trạng thái nút
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="refresh-cw" class="w-4 h-4 animate-spin"></i> Đang quét...';
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        
+        // Tạo delay 1.5 giây
+        setTimeout(() => {
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            fetch("{% url 'scan_security' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrfToken,
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Quét hoàn tất!");
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error("Lỗi quét hệ thống:", error);
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+                if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+            });
+        }, 1500);
+    });
+
+    document.getElementById('network-toggle').addEventListener('click', function() {
+        const btn = this;
+        btn.disabled = true;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch("{% url 'toggle_network' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "Content-Type": "application/json"
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            console.error("Lỗi thay đổi trạng thái mạng:", error);
+            btn.disabled = false;
+        });
+    });
+</script>
+{% endblock %}

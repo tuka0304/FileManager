@@ -542,6 +542,7 @@ def kygui_view(request):
                 })
         except Exception as e:
             error = f"Lỗi lấy danh sách từ Google Drive: {str(e)}"
+            print(f"[DEBUG - LỖI LOAD FILE] {error}")
 
     return render(request, 'kygui.html', {'drive_files': drive_files, 'error': error, 'is_locked': is_locked})
 

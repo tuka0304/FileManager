@@ -1,4 +1,4 @@
-('D:\\MNM\\File_System\\build\\FileBox\\PYZ-00.pyz',
+('D:\\MNM\\File_System\\build\\FileBox__App\\PYZ-00.pyz',
  [('FileManager', 'D:\\MNM\\File_System\\FileManager\\__init__.py', 'PYMODULE'),
   ('FileManager.settings',
    'D:\\MNM\\File_System\\FileManager\\settings.py',

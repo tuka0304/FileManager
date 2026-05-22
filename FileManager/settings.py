@@ -83,19 +83,14 @@ EMAIL_HOST_PASSWORD = 'oomq ylrn tnof ljhz' # Mật khẩu ứng dụng của Go
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-if 'DATABASE_URL' in os.environ:
-    DATABASES = {
-        'default': dj_database_url.config(conn_max_age=600)
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-
-
+# Database
+# Ép ứng dụng xài thẳng External URL (Nhớ copy link External có đuôi .render.com trên Dashboard)
+DATABASES = {
+    'default': dj_database_url.config(
+        default='postgresql://filebox_db_user:DZsNZRIGA9JQn442VWrfi6tYnVUANqyz@dpg-d825a69j2pic73b212n0-a.singapore-postgres.render.com/filebox_db', 
+        conn_max_age=600
+    )
+}
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 

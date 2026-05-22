@@ -1,10 +1,12 @@
 import os
+import webbrowser
+import time
 import shutil
 import datetime
 from datetime import timedelta
 from collections import defaultdict
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required as django_login_required
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import login
 from django.contrib.auth.models import User
@@ -25,21 +27,6 @@ from .models import UserProfile, TransferHistory, SecuredVault, QuickShare, Rece
 
 from .drive_utils import upload_to_drive, list_drive_files, download_from_drive
 
-# Viết đè decorator login_required để tự động xử lý môi trường
-def login_required(function):
-    def wrapper(request, *args, **kwargs):
-        # Nếu đang ở môi trường Desktop (Không phải Render) và chưa đăng nhập
-        if os.environ.get('RENDER') != 'true' and not request.user.is_authenticated:
-            from django.contrib.auth.models import User
-            from django.contrib.auth import login
-            # Tự động tìm tài khoản admin hoặc tài khoản đầu tiên trong máy để đăng nhập ngầm
-            user = User.objects.filter(is_superuser=True).first() or User.objects.first()
-            if user:
-                login(request, user)
-        
-        # Gọi lại hàm login_required gốc của Django
-        return django_login_required(function)(request, *args, **kwargs)
-    return wrapper
 
 # ==========================================
 # HÀM BỔ TRỢ
@@ -66,55 +53,74 @@ def get_folder_size(folder_path):
 
 def find_empty_folders(root_path):
     empty_folders = []
-    # Danh sách các thư mục "vùng cấm" không được quét
-    skip_dirs = {'Windows', 'Program Files', 'Program Files (x86)', '$Recycle.Bin', 'ProgramData', 'System Volume Information'}
+    skip_dirs = {'Windows', 'Program Files', 'Program Files (x86)', '$Recycle.Bin', 'ProgramData', 'System Volume Information', 'AppData', 'node_modules', '.git'}
+    folder_scanned = 0
+    root_depth = root_path.count(os.sep) # Tính độ sâu của ổ đĩa gốc
     
     try:
-        # Dùng topdown=True để có thể can thiệp bỏ qua thư mục con ngay từ trên xuống
         for dirpath, dirnames, filenames in os.walk(root_path, topdown=True):
-            # Loại bỏ các thư mục hệ thống khỏi danh sách cần duyệt (dirnames)
+            # ÉP PHANH 1: Không cho mò quá sâu (Chỉ quét 2 lớp thư mục)
+            current_depth = dirpath.count(os.sep)
+            if current_depth > root_depth + 2:
+                dirnames.clear() # Xóa rỗng danh sách để chặn không cho os.walk đi sâu thêm
+                continue
+                
             dirnames[:] = [d for d in dirnames if d not in skip_dirs]
             
-            # Kiểm tra xem thư mục hiện tại có trống không
-            # Thư mục trống là thư mục không có file VÀ không có thư mục con nào
             if not dirnames and not filenames:
                 empty_folders.append(dirpath)
+                
+            # ÉP PHANH 2: Dành riêng cho USB - Quét đúng 100 thư mục là nghỉ!
+            folder_scanned += 1
+            if folder_scanned > 100:
+                break
     except Exception: 
         pass
         
     return empty_folders
 
+
 def find_duplicate_files(root_path):
     files_info = defaultdict(list)
     duplicates = []
     folder_scanned = 0
+    root_depth = root_path.count(os.sep)
+    
     try:
-        for dirpath, _, filenames in os.walk(root_path):
+        # Nhớ thêm topdown=True để có thể chặt đứt các nhánh thư mục con
+        for dirpath, dirnames, filenames in os.walk(root_path, topdown=True):
+            # ÉP PHANH 1: Quét sâu tối đa 2 lớp
+            current_depth = dirpath.count(os.sep)
+            if current_depth > root_depth + 2:
+                dirnames.clear()
+                continue
+                
             for filename in filenames:
                 full_path = os.path.join(dirpath, filename)
                 try:
                     size = os.path.getsize(full_path)
                     if size > 0: files_info[(filename, size)].append(full_path)
                 except Exception: pass
+                
+            # ÉP PHANH 2: 100 thư mục là dừng
             folder_scanned += 1
-            if folder_scanned > 2000: break 
+            if folder_scanned > 100: 
+                break 
     except Exception: pass
+    
     for (name, size), paths in files_info.items():
         if len(paths) > 1:
             duplicates.append({'name': name, 'size': round(size / (1024*1024), 2), 'paths': paths})
     return duplicates
-
 # ==========================================
 # 1. AUTHENTICATION (Xác thực người dùng)
-# ==========================================
+# ==========================================    
 def register_view(request):
     """Xử lý trang dangky.html"""
     if request.method == 'POST':
         form = FormDangKyTuyChinh(request.POST or None)
         if form.is_valid():
             user = form.save()
-            # Tạo profile mặc định cho người dùng mới
-            UserProfile.objects.create(user=user)
             login(request, user)
             return redirect('trang-chu')
     else:
@@ -211,8 +217,21 @@ def teptin_view(request):
     """Xử lý trang teptin.html (Quản lý file chi tiết, Tìm kiếm, Sắp xếp)"""
     # Nếu đang chạy trên máy chủ Render (Web), chuyển hướng tải file Desktop
     if os.environ.get('RENDER') == 'true':
+        if request.GET.get('from_tour') == 'true':
+            mock_files = [
+                {'name': 'Documents', 'full_path': 'C:\\Documents', 'is_dir': True, 'size': 0, 'date': '20/05/2026 14:30'},
+                {'name': 'Downloads', 'full_path': 'C:\\Downloads', 'is_dir': True, 'size': 0, 'date': '20/05/2026 15:45'},
+                {'name': 'Dự án FileBox', 'full_path': 'C:\\Dự án FileBox', 'is_dir': True, 'size': 0, 'date': '19/05/2026 09:15'},
+                {'name': 'Báo_cáo_cuối_kỳ.docx', 'full_path': 'C:\\Báo_cáo_cuối_kỳ.docx', 'is_dir': False, 'size': 4.2, 'date': '20/05/2026 21:00'},
+                {'name': 'FileBox_Setup.exe', 'full_path': 'C:\\FileBox_Setup.exe', 'is_dir': False, 'size': 25.4, 'date': '20/05/2026 18:20'},
+            ]
+            return render(request, 'teptin_tour.html', {
+                'selected_drive': request.GET.get('drive', 'C:'),
+                'current_path': request.GET.get('path', 'C:\\'),
+                'file_list': mock_files,
+                'is_root': True
+            })
         messages.info(request, 'Tính năng quản lý ổ đĩa sâu chỉ hỗ trợ trên bản Desktop. Đang chuyển hướng đến tab mới để tải về...')
-        # URL chính xác tới trang releases của sếp
         return redirect('https://github.com/tuka0304/FileManager/releases')
 
     selected_drive = request.GET.get('drive', 'C:')
@@ -308,6 +327,29 @@ def quetdon_view(request):
     """Xử lý trang quetdon.html"""
     # Nếu đang chạy trên máy chủ Render (Web), chuyển hướng tải file .exe
     if os.environ.get('RENDER') == 'true':
+        if request.GET.get('from_tour') == 'true':
+            action = request.GET.get('action', '')
+            empty_folders = []
+            duplicates = []
+            
+            if action == 'empty_folders':
+                empty_folders = [
+                    'C:\\Users\\Admin\\AppData\\Local\\Temp\\Empty_Dir_01',
+                    'C:\\Dự án FileBox\\core\\__pycache__\\empty',
+                    'C:\\Downloads\\New Folder'
+                ]
+            elif action == 'duplicates':
+                duplicates = [
+                    {'name': 'anh_giao_dien_old.png', 'size': 1.4, 'paths': ['C:\\Downloads\\anh_giao_dien_old.png', 'C:\\Dự án FileBox\\media\\anh_giao_dien_old.png']},
+                    {'name': 'tai_lieu_huong_dan.pdf', 'size': 3.2, 'paths': ['C:\\Documents\\tai_lieu_huong_dan.pdf', 'C:\\Downloads\\tai_lieu_huong_dan.pdf']}
+                ]
+                
+            return render(request, 'quetdon_tour.html', {
+                'action': action,
+                'selected_drive': request.GET.get('drive', 'C:'),
+                'empty_folders': empty_folders,
+                'duplicates': duplicates,
+            })
         messages.info(request, 'Tính năng dọn dẹp rác chỉ hỗ trợ trên bản Desktop. Đang chuyển hướng đến trang tải xuống...')
         return redirect('https://github.com/tuka0304/FileManager/releases')
 
@@ -360,10 +402,6 @@ def delete_scanned_item(request):
 @login_required
 def chuyenfile_view(request):
     """Xử lý trang chuyenfile.html"""
-    if os.environ.get('RENDER') != 'true':
-        messages.info(request, 'Tính năng Chuyển file đám mây hoạt động tốt nhất trên Web. Đang chuyển hướng...')
-        return redirect('https://filemanager-mfrh.onrender.com/chuyen-file/')
-        
     context = {}
     error = None
     preview_file = None
@@ -492,10 +530,6 @@ def toggle_network_security(request):
 @login_required
 def kygui_view(request):
     """Xử lý trang kygui.html - Đẩy file lên Google Drive"""
-    if os.environ.get('RENDER') != 'true':
-        messages.info(request, 'Két sắt bảo mật Google Drive hoạt động tốt nhất trên Web. Đang chuyển hướng...')
-        return redirect('https://filemanager-mfrh.onrender.com/ky-gui/')
-        
     error = None
     is_locked = not request.session.get('vault_unlocked', False)
 
@@ -511,6 +545,10 @@ def kygui_view(request):
                 user_id=request.user.id
             )
             print(f"[DEBUG - SUCCESS] Da day file len Drive thanh cong voi ID: {file_id}")
+            
+            # Thêm độ trễ 3 giây để Google Drive kịp lập chỉ mục file mới
+            time.sleep(3)
+            
             return redirect('ky-gui')
         except Exception as e:
             error = f"Lỗi đẩy file lên Google Drive: {str(e)}"
@@ -542,9 +580,9 @@ def kygui_view(request):
                 })
         except Exception as e:
             error = f"Lỗi lấy danh sách từ Google Drive: {str(e)}"
+            print(f"[DEBUG - LỖI LOAD FILE] {error}")
 
     return render(request, 'kygui.html', {'drive_files': drive_files, 'error': error, 'is_locked': is_locked})
-
 @login_required
 def unlock_vault(request):
     if request.method == 'POST':

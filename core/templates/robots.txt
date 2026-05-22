@@ -8,10 +8,7 @@ Allow: /
 Disallow: /admin/
 Disallow: /admin-panel/
 Disallow: /ky-gui/
-Disallow: /tep-tin/
-Disallow: /quet-don/
 Disallow: /bao-mat/
-Disallow: /chuyen-file/
 Disallow: /cai-dat/
 
 # Cấm bot quét các trang form để tránh bị spam lỗi

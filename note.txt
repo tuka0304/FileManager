@@ -1,0 +1,2 @@
+lệnh đóng gói:
+pyinstaller --clean --noconfirm --onedir --noconsole --name="FileBox__App" --icon="logo.ico" --hidden-import="psycopg2" --hidden-import="dj_database_url" --hidden-import="core" --hidden-import="whitenoise" --hidden-import="whitenoise.middleware" --add-data "core/templates;core/templates" --add-data "core/static;core/static" run_desktop.py

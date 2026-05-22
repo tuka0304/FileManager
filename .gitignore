@@ -3,10 +3,18 @@ credentials.json
 token.json
 .env
 
+
 # Bỏ qua môi trường ảo và rác hệ thống
 venv/
 __pycache__/
 *.pyc
+
+
+# Bỏ qua các thư mục đóng gói
+dist/
+build/
+*.spec
+
 
 # Bỏ qua database (tránh lộ dữ liệu test)
 db.sqlite3

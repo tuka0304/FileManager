@@ -53,55 +53,74 @@ def get_folder_size(folder_path):
 
 def find_empty_folders(root_path):
     empty_folders = []
-    # Danh sách các thư mục "vùng cấm" không được quét
-    skip_dirs = {'Windows', 'Program Files', 'Program Files (x86)', '$Recycle.Bin', 'ProgramData', 'System Volume Information'}
+    skip_dirs = {'Windows', 'Program Files', 'Program Files (x86)', '$Recycle.Bin', 'ProgramData', 'System Volume Information', 'AppData', 'node_modules', '.git'}
+    folder_scanned = 0
+    root_depth = root_path.count(os.sep) # Tính độ sâu của ổ đĩa gốc
     
     try:
-        # Dùng topdown=True để có thể can thiệp bỏ qua thư mục con ngay từ trên xuống
         for dirpath, dirnames, filenames in os.walk(root_path, topdown=True):
-            # Loại bỏ các thư mục hệ thống khỏi danh sách cần duyệt (dirnames)
+            # ÉP PHANH 1: Không cho mò quá sâu (Chỉ quét 2 lớp thư mục)
+            current_depth = dirpath.count(os.sep)
+            if current_depth > root_depth + 2:
+                dirnames.clear() # Xóa rỗng danh sách để chặn không cho os.walk đi sâu thêm
+                continue
+                
             dirnames[:] = [d for d in dirnames if d not in skip_dirs]
             
-            # Kiểm tra xem thư mục hiện tại có trống không
-            # Thư mục trống là thư mục không có file VÀ không có thư mục con nào
             if not dirnames and not filenames:
                 empty_folders.append(dirpath)
+                
+            # ÉP PHANH 2: Dành riêng cho USB - Quét đúng 100 thư mục là nghỉ!
+            folder_scanned += 1
+            if folder_scanned > 100:
+                break
     except Exception: 
         pass
         
     return empty_folders
 
+
 def find_duplicate_files(root_path):
     files_info = defaultdict(list)
     duplicates = []
     folder_scanned = 0
+    root_depth = root_path.count(os.sep)
+    
     try:
-        for dirpath, _, filenames in os.walk(root_path):
+        # Nhớ thêm topdown=True để có thể chặt đứt các nhánh thư mục con
+        for dirpath, dirnames, filenames in os.walk(root_path, topdown=True):
+            # ÉP PHANH 1: Quét sâu tối đa 2 lớp
+            current_depth = dirpath.count(os.sep)
+            if current_depth > root_depth + 2:
+                dirnames.clear()
+                continue
+                
             for filename in filenames:
                 full_path = os.path.join(dirpath, filename)
                 try:
                     size = os.path.getsize(full_path)
                     if size > 0: files_info[(filename, size)].append(full_path)
                 except Exception: pass
+                
+            # ÉP PHANH 2: 100 thư mục là dừng
             folder_scanned += 1
-            if folder_scanned > 2000: break 
+            if folder_scanned > 100: 
+                break 
     except Exception: pass
+    
     for (name, size), paths in files_info.items():
         if len(paths) > 1:
             duplicates.append({'name': name, 'size': round(size / (1024*1024), 2), 'paths': paths})
     return duplicates
-
 # ==========================================
 # 1. AUTHENTICATION (Xác thực người dùng)
-# ==========================================
+# ==========================================    
 def register_view(request):
     """Xử lý trang dangky.html"""
     if request.method == 'POST':
         form = FormDangKyTuyChinh(request.POST or None)
         if form.is_valid():
             user = form.save()
-            # Tạo profile mặc định cho người dùng mới
-            UserProfile.objects.create(user=user)
             login(request, user)
             return redirect('trang-chu')
     else:

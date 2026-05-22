@@ -17,7 +17,15 @@
         <div class="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-2xl text-center shadow-sm">
             <h2 class="text-xl font-bold text-gray-900 mb-2">Tệp của bạn đã sẵn sàng!</h2>
             <p class="text-gray-600 mb-4">Sử dụng mã PIN bên dưới để tải xuống tệp <span class="font-semibold text-blue-700">{{ recent_file }}</span></p>
-            <div class="text-5xl font-mono font-bold text-blue-600 tracking-[0.25em] bg-white inline-block px-8 py-4 rounded-xl border border-blue-100 shadow-sm">{{ recent_pin }}</div>
+            <div class="inline-flex items-center gap-3">
+                <div id="pin-code" class="text-5xl font-mono font-bold text-blue-600 tracking-[0.25em] bg-white px-8 py-4 rounded-xl border border-blue-100 shadow-sm">{{ recent_pin }}</div>
+                <div class="relative flex items-center">
+                    <button onclick="copyPin()" class="p-4 bg-white border border-blue-100 rounded-xl text-blue-500 hover:bg-blue-50 hover:text-blue-700 transition-colors shadow-sm focus:outline-none" title="Sao chép">
+                        <i id="copy-icon" data-lucide="copy" class="w-6 h-6"></i>
+                    </button>
+                    <span id="copy-tooltip" class="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 transition-opacity pointer-events-none whitespace-nowrap">Đã copy!</span>
+                </div>
+            </div>
             <p class="mt-4 text-sm text-gray-500">Mã này có thể sử dụng một lần ở bất kỳ thiết bị nào.</p>
         </div>
         {% endif %}
@@ -209,4 +217,41 @@
     </div>
 </main>
 
+<script>
+    function copyPin() {
+        const pinText = document.getElementById('pin-code').innerText.trim();
+        navigator.clipboard.writeText(pinText).then(() => {
+            const icon = document.getElementById('copy-icon');
+            const tooltip = document.getElementById('copy-tooltip');
+            
+            // Đổi icon sang dấu check xanh
+            icon.setAttribute('data-lucide', 'check');
+            icon.classList.remove('text-blue-500');
+            icon.classList.add('text-green-500');
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            
+            // Hiện tooltip "Đã copy!"
+            tooltip.classList.remove('opacity-0');
+            tooltip.classList.add('opacity-100');
+            
+            // Trả lại trạng thái cũ sau 2 giây
+            setTimeout(() => {
+                icon.setAttribute('data-lucide', 'copy');
+                icon.classList.remove('text-green-500');
+                icon.classList.add('text-blue-500');
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+                
+                tooltip.classList.remove('opacity-100');
+                tooltip.classList.add('opacity-0');
+            }, 2000);
+        }).catch(err => {
+            console.error('Không thể copy: ', err);
+            alert("Có lỗi xảy ra khi sao chép mã PIN. Vui lòng copy thủ công!");
+        });
+    }
+</script>
 {% endblock %}

@@ -21,6 +21,7 @@ import random
 from django.core.mail import send_mail
 from django.conf import settings
 from .forms import FormDangKyTuyChinh
+from pathlib import Path
 
 # Import các models của bạn (Đảm bảo trong models.py đã có những class này)
 from .models import UserProfile, TransferHistory, SecuredVault, QuickShare, ReceiveHistory, Notification, SecurityLog
@@ -456,9 +457,18 @@ def chuyenfile_view(request):
                             message=f"Tệp {quick_share.file_name} vừa được tải xuống bằng mã PIN {pin}."
                         )
                         file_bytes, mime_type, file_name = download_from_drive(quick_share.drive_file_id)
-                        response = HttpResponse(file_bytes, content_type=mime_type)
-                        response['Content-Disposition'] = f'attachment; filename="{file_name}"'
-                        return response
+                        
+                        if os.environ.get('RENDER') == 'true':
+                            response = HttpResponse(file_bytes, content_type=mime_type)
+                            response['Content-Disposition'] = f'attachment; filename="{file_name}"'
+                            return response
+                        else:
+                            downloads_path = Path.home() / "Downloads"
+                            file_path = downloads_path / file_name
+                            with open(file_path, 'wb') as f:
+                                f.write(file_bytes)
+                            messages.success(request, 'Tệp đã được lưu an toàn vào thư mục Downloads!')
+                            return redirect('chuyen-file')
                     
                     # Bước 1: Xem trước thông tin file
                     else:
